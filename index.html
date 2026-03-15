@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cimwav | Premium Beats</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --primary: #00ff88; --bg: #050505; --card: #111; --text: #fff; --border: #222; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 100px; text-align: center; }
+        header { padding: 40px 20px; border-bottom: 1px solid var(--border); }
+        header h1 { letter-spacing: 8px; text-transform: uppercase; margin: 0; pointer-events: none; }
+        .container { max-width: 800px; margin: auto; padding: 20px; }
+        .search-box { width: 100%; padding: 15px; background: var(--card); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 40px; font-size: 16px; outline: none; }
+        
+        /* Admin Section - Hidden completely */
+        #adminPanel { display: none; background: #161616; padding: 20px; border: 1px solid var(--primary); border-radius: 12px; margin-bottom: 40px; text-align: left; }
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .admin-grid input { padding: 12px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; }
+        .full { grid-column: span 2; }
+
+        .beat-card { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 20px; border: 1px solid var(--border); position: relative; text-align: left; }
+        .title { font-size: 24px; font-weight: bold; margin-bottom: 15px; display: block; color: var(--primary); }
+        audio { width: 100%; margin: 15px 0; filter: invert(1); }
+        .price-row { display: flex; gap: 10px; }
+        .btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; text-align: center; text-decoration: none; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 12px; border-radius: 8px; cursor: pointer; flex: 1; }
+        .sold-tag { position: absolute; top: 15px; right: 15px; background: #ff3e3e; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+
+        footer { position: fixed; bottom: 0; width: 100%; background: #000; padding: 20px; border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 20px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>CIMWAV</h1>
+</header>
+
+<div class="container">
+    <div id="adminPanel">
+        <h3 style="margin-top:0; color: var(--primary);">Admin Control</h3>
+        <div class="admin-grid">
+            <input type="text" id="bTitle" placeholder="Beat Name" class="full">
+            <input type="text" id="bUrl" placeholder="Direct MP3 Link" class="full">
+            <input type="number" id="pExc" placeholder="Exclusive Price ($)">
+            <input type="number" id="pUlt" placeholder="Ultimate Price ($)">
+            <button class="btn full" onclick="saveBeat()">Publish Beat</button>
+        </div>
+    </div>
+
+    <input type="text" id="search" class="search-box" placeholder="Search for your next hit..." onkeyup="search()">
+    <div id="list">Loading beats...</div>
+</div>
+
+<footer>
+    <button class="btn-outline" onclick="contact()">CONTACT</button>
+    <button class="btn-outline" onclick="share()">SHARE SITE</button>
+</footer>
+
+<script>
+    // --- 1. CONFIGURATION ---
+    const SB_URL = 'YOUR_SUPABASE_URL'; 
+    const SB_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    let isAdmin = false;
+    let beats = [];
+
+    // --- 2. SECRET ACCESS LOGIC ---
+    // الموقع سيراقب الرابط، إذا أضفت #admin سيطلب الباسورد
+    function checkSecretAccess() {
+        if (window.location.hash === "#admin") {
+            let p = prompt("Enter Secret Key:");
+            if (p === "123") { // باسوردك
+                isAdmin = true;
+                document.getElementById('adminPanel').style.display = 'block';
+                render(beats);
+            } else {
+                window.location.hash = ""; // مسح الكلمة من الرابط إذا كان الباسورد خطأ
+            }
+        }
+    }
+
+    // مراقبة تغيير الرابط (إذا كتبته وهو داخل الموقع)
+    window.addEventListener('hashchange', checkSecretAccess);
+
+    async function getBeats() {
+        const { data } = await supabase.from('beats').select('*').order('created_at', {ascending: false});
+        if (data) { beats = data; render(beats); checkSecretAccess(); }
+    }
+
+    function render(data) {
+        const list = document.getElementById('list');
+        list.innerHTML = data.map(b => `
+            <div class="beat-card">
+                ${b.is_sold ? '<span class="sold-tag">SOLD</span>' : ''}
+                <span class="title">${b.title}</span>
+                <audio src="${b.audio_url}" controls controlsList="nodownload"></audio>
+                <div class="price-row">
+                    <button class="btn-outline" onclick="buy('${b.title}', 'Exclusive', ${b.exc_price})" ${b.is_sold ? 'disabled' : ''}>Exclusive: $${b.exc_price}</button>
+                    <button class="btn" onclick="buy('${b.title}', 'Ultimate', ${b.ult_price})" ${b.is_sold ? 'disabled' : ''}>Ultimate: $${b.ult_price}</button>
+                </div>
+                ${isAdmin ? `
+                    <div style="margin-top:15px; border-top:1px solid #333; padding-top:15px; display:flex; gap:10px;">
+                        <button onclick="del(${b.id})" style="color:red; background:none; border:none; cursor:pointer;">Delete</button>
+                        <button onclick="sell(${b.id})" style="color:orange; background:none; border:none; cursor:pointer;">Mark Sold</button>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+    }
+
+    async function saveBeat() {
+        const title = document.getElementById('bTitle').value;
+        const audio_url = document.getElementById('bUrl').value;
+        const exc_price = document.getElementById('pExc').value;
+        const ult_price = document.getElementById('pUlt').value;
+        if(!title || !audio_url) return;
+        await supabase.from('beats').insert([{title, audio_url, exc_price, ult_price}]);
+        getBeats();
+        alert("Published Successfully!");
+    }
+
+    async function del(id) { if(confirm("Delete?")) { await supabase.from('beats').delete().eq('id', id); getBeats(); } }
+    async function sell(id) { await supabase.from('beats').update({is_sold: true}).eq('id', id); getBeats(); }
+
+    function search() {
+        const q = document.getElementById('search').value.toLowerCase();
+        render(beats.filter(b => b.title.toLowerCase().includes(q)));
+    }
+
+    function buy(t, p, pr) {
+        window.location.href = `mailto:your-email@gmail.com?subject=Purchase Inquiry: ${t}&body=I am interested in buying ${t} (${p} License) for $${pr}`;
+    }
+
+    function contact() { window.location.href = "mailto:your-email@gmail.com"; }
+    function share() { prompt("Copy site link:", window.location.href.split('#')[0]); }
+
+    getBeats();
+</script>
+</body>
+</html>
