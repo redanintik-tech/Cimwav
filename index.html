@@ -127,7 +127,7 @@
         
         if(!title || !audio_url) return alert("Please fill all fields");
 
-        await supabaseClient.from('beats').insert([{title, audio_url, exc_price, ult_price}]);
+       const { error } = await supabaseClient.from('beats').insert([{title, audio_url, exc_price, ult_price}]);
         loadData();
         alert("Published!");
     }
@@ -141,6 +141,10 @@
 
     async function markAsSold(id) {
         await supabaseClient.from('beats').update({is_sold: true}).eq('id', id);
+        if (error) {
+            alert("لم ينجح الرفع والسبب هو: " + error.message);
+        } else {
+            alert("تم النشر بنجاااااح!");
         loadData();
     }
 
