@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cimwav | Premium Beats</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root { --primary: #00ff88; --bg: #050505; --card: #111; --text: #fff; --border: #222; }
@@ -42,24 +43,30 @@
         .sold-tag { position: absolute; top: 15px; right: 15px; background: #ff3e3e; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
 
         footer { position: fixed; bottom: 0; width: 100%; background: #000; padding: 20px; border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 20px; z-index: 100; }
+        .buy-popover { display: none; position: absolute; background: #111; border: 2px solid var(--primary); padding: 20px; border-radius: 12px; z-index: 1000; width: 300px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
+.terms-text { background: #1a1a1a; padding: 10px; border-radius: 5px; font-size: 11px; color: #aaa; margin-bottom: 15px; text-align: left; border-left: 3px solid var(--primary); }
+.buy-popover input { width: 100%; margin-bottom: 10px; padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 6px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div id="buyPopover" class="buy-popover">
-    <div id="popTitle" style="color:var(--primary); font-weight:bold; margin-bottom:8px;">Checkout</div>
-    <div class="pop-info">
-        <strong>Western Union Details:</strong><br>
-        Name: Nader Kitni<br>
-    Country: Tunisia<br>
-    City: Tozeur<br>
-    Postal Code: 2200<br>
+    <div id="step1">
+        <div style="color:var(--primary); font-weight:bold; margin-bottom:10px;">License Terms</div>
+        <div class="terms-text">
+            By purchasing, you agree that the WAV files and your personal contract will be delivered via email within 24 hours after payment verification.
+        </div>
+        <div id="licenseButtons"></div>
     </div>
-   <input type="text" id="pCustName" placeholder="Your Full Name (Sender)">
-<input type="text" id="pCustCountry" placeholder="Your Country/City">
-<input type="text" id="pMTCN" placeholder="MTCN Number (10 Digits)">
-    <button class="btn" style="padding:10px; font-size:13px;" onclick="confirmPurchase()">Confirm Order</button>
-    <button class="btn-outline" style="padding:5px; border:none; color:#666; font-size:12px; margin-top:5px; width:100%;" onclick="closePopover()">Cancel</button>
+    <div id="step2" style="display:none;">
+        <div style="color:var(--primary); font-weight:bold; margin-bottom:10px;">Payment Details</div>
+        <input type="text" id="pCustName" placeholder="Full Name">
+        <input type="email" id="pCustEmail" placeholder="Email Address">
+        <input type="text" id="pCustCountry" placeholder="Country">
+        <input type="text" id="pMTCN" placeholder="MTCN Number">
+        <button class="btn" onclick="processOrder()">Confirm</button>
+    </div>
+    <button class="btn-outline" style="border:none; color:#666; font-size:12px; margin-top:5px; width:100%;" onclick="closePopover()">Cancel</button>
 </div>
 
 <header>
@@ -121,17 +128,20 @@
         }
     }
 
-    function renderBeats(dataToDisplay) {
+   function renderBeats(dataToDisplay) {
         const listDiv = document.getElementById('list');
         listDiv.innerHTML = dataToDisplay.map(b => `
             <div class="beat-card">
                 ${b.is_sold ? '<span class="sold-tag">SOLD</span>' : ''}
                 <span class="title">${b.title}</span>
                 <audio src="${b.audio_url}" controls controlsList="nodownload"></audio>
+                
                 <div class="price-row">
-                    <button class="btn-outline" onclick="handleBuy(event, '${b.title}', 'Exclusive', ${b.exc_price})">Exclusive: $${b.exc_price}</button>
-                    <button class="btn" onclick="handleBuy(event, '${b.title}', 'Ultimate', ${b.ult_price})">Ultimate: $${b.ult_price}</button>
+                    <button class="btn" onclick="handleBuy(event, '${b.title}', ${b.exc_price}, ${b.ult_price})">
+                        BUY LICENSE
+                    </button>
                 </div>
+
                 ${isAdminMode ? `
                     <div style="margin-top:15px; border-top:1px solid #333; padding-top:15px; display:flex; gap:10px;">
                         <button onclick="deleteItem(${b.id})" style="color:red; background:none; border:none; cursor:pointer;">Delete</button>
@@ -141,39 +151,70 @@
             </div>
         `).join('');
     }
+let selectedLicense = {};
 
-    function handleBuy(event, beatName, licenseType, price) {
+    function handleBuy(event, beatName, exc_price, ult_price) {
         event.stopPropagation();
-        activeBeat = { name: beatName, license: licenseType, price: price };
+        activeBeat = { name: beatName, exc: exc_price, ult: ult_price };
+        
+        // إظهار واجهة الشروط أولاً
+        document.getElementById('step1').style.display = 'block';
+        document.getElementById('step2').style.display = 'none';
+        
+        const buttonsDiv = document.getElementById('licenseButtons');
+        buttonsDiv.innerHTML = `
+            <button class="btn-outline" style="width:100%; margin-bottom:8px;" onclick="goToStep2('Exclusive', ${exc_price})">Exclusive License ($${exc_price})</button>
+            <button class="btn" style="width:100%;" onclick="goToStep2('Ultimate', ${ult_price})">Ultimate License ($${ult_price})</button>
+        `;
+
         const popover = document.getElementById('buyPopover');
-        const button = event.currentTarget; 
-        const rect = button.getBoundingClientRect();
-        document.getElementById('popTitle').innerText = `${licenseType}: $${price}`;
+        const rect = event.currentTarget.getBoundingClientRect();
         popover.style.display = 'block';
-        popover.style.top = (window.scrollY + rect.bottom + 10) + 'px'; 
+        popover.style.top = (window.scrollY + rect.bottom + 10) + 'px';
         popover.style.left = (rect.left) + 'px';
     }
 
-    function closePopover() { document.getElementById('buyPopover').style.display = 'none'; }
+    function goToStep2(type, price) {
+        selectedLicense = { type: type, price: price };
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+    }
 
-   function confirmPurchase() {
-    const name = document.getElementById('pCustName').value;
-    const country = document.getElementById('pCustCountry').value;
-    if(!name || !country) return alert("Please fill your info");
+    async function processOrder() {
+        const { jsPDF } = window.jspdf;
+        const name = document.getElementById('pCustName').value;
+        const email = document.getElementById('pCustEmail').value;
+        const country = document.getElementById('pCustCountry').value;
+        const mtcn = document.getElementById('pMTCN').value;
 
-    const orderDetails = `Order: ${activeBeat.name}\nLicense: ${activeBeat.license}\nPrice: $${activeBeat.price}\nBuyer: ${name}\nCountry: ${country}`;
-    
-    // محاولة فتح تطبيق الإيميل
-    const subject = `Order: ${activeBeat.name}`;
-    window.location.href = `mailto:rouni.beats@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(orderDetails)}`;
+        if(!name || !email || !country || !mtcn) return alert("Please fill all fields!");
 
-    // نسخ التفاصيل تلقائياً (احتياطاً لمن لا يملك تطبيق إيميل)
-    navigator.clipboard.writeText(orderDetails).then(() => {
-        alert("Order details copied to clipboard! If your email app didn't open, please paste the details in an email to rouni.beats@gmail.com");
-    });
+        // 1. توليد العقد المعبأ تلقائياً (Self-filling)
+        const doc = new jsPDF();
+        doc.setFont("helvetica", "bold");
+        doc.text("CIMWAV LICENSE AGREEMENT", 105, 20, { align: "center" });
+        doc.setFontSize(10);
+        doc.text(`Buyer Name: ${name}`, 20, 40);
+        doc.text(`Email: ${email}`, 20, 45);
+        doc.text(`Beat Title: ${activeBeat.name}`, 20, 55);
+        doc.text(`License Type: ${selectedLicense.type}`, 20, 60);
+        doc.text(`MTCN Code: ${mtcn}`, 20, 65);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 70);
+        doc.text("Signature: ROUNI - CIMWAV PRODUCTIONS", 20, 100);
 
-    closePopover();
-}
+        // تحميل العقد لك (ليكون جاهزاً للإرسال)
+        doc.save(`Contract_${activeBeat.name}_${name}.pdf`);
+
+        // 2. إظهار الرسالة الإنجليزية للمستخدم
+        alert("The audio file will be sent along with your chosen license contract in less than 24 hours after order confirmation.");
+
+        // 3. إرسال البيانات لك عبر الإيميل
+        const subject = `Order: ${activeBeat.name}`;
+        const body = `Hi Rouni,\n\nDetails:\nName: ${name}\nEmail: ${email}\nMTCN: ${mtcn}\nLicense: ${selectedLicense.type}`;
+        window.location.href = `mailto:rouni.beats@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        
+        closePopover();
+    }
 
     window.onclick = function(e) { if (!e.target.closest('#buyPopover')) closePopover(); };
 
