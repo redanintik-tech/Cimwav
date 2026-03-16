@@ -27,25 +27,27 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.9);
         }
         .pop-info { font-size: 11px; color: #888; background: #1a1a1a; padding: 10px; border-radius: 5px; margin-bottom: 10px; line-height: 1.4; text-align: left; }
-        .buy-popover input { width: 100%; margin-bottom: 8px; padding: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; font-size: 13px; }
-
-        #adminPanel { display: none; background: #161616; padding: 20px; border: 1px solid var(--primary); border-radius: 12px; margin-bottom: 40px; text-align: left; }
-        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .admin-grid input { padding: 12px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; }
-        .full { grid-column: span 2; }
-
-        .beat-card { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 20px; border: 1px solid var(--border); position: relative; text-align: left; }
-        .title { font-size: 24px; font-weight: bold; margin-bottom: 15px; display: block; color: var(--primary); }
-        audio { width: 100%; margin: 15px 0; filter: invert(1); }
-        .price-row { display: flex; gap: 10px; }
-        .btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; text-align: center; text-decoration: none; display: block; width: 100%; }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 12px; border-radius: 8px; cursor: pointer; flex: 1; }
-        .sold-tag { position: absolute; top: 15px; right: 15px; background: #ff3e3e; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-
-        footer { position: fixed; bottom: 0; width: 100%; background: #000; padding: 20px; border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 20px; z-index: 100; }
-        .buy-popover { display: none; position: absolute; background: #111; border: 2px solid var(--primary); padding: 20px; border-radius: 12px; z-index: 1000; width: 300px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); }
-.terms-text { background: #1a1a1a; padding: 10px; border-radius: 5px; font-size: 11px; color: #aaa; margin-bottom: 15px; text-align: left; border-left: 3px solid var(--primary); }
+   /* تنسيقات نافذة الشراء والقوانين */
+.buy-popover {
+    display: none; position: absolute; background: #111; border: 2px solid var(--primary);
+    padding: 20px; border-radius: 12px; z-index: 1000; width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+}
+.terms-container { display: flex; gap: 10px; margin-bottom: 15px; }
+.term-box {
+    flex: 1; background: #1a1a1a; padding: 12px; border-radius: 8px;
+    border-top: 3px solid var(--primary); font-size: 11px; color: #ccc; line-height: 1.4;
+}
+.term-box h4 { margin: 0 0 8px 0; color: #fff; font-size: 14px; text-align: center; }
+.middle-text {
+    text-align: center; color: var(--primary); font-size: 12px; font-weight: bold;
+    margin-bottom: 15px; padding: 10px; background: #222; border-radius: 6px;
+}
+.buttons-container { display: flex; gap: 10px; }
 .buy-popover input { width: 100%; margin-bottom: 10px; padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 6px; box-sizing: border-box; }
+.wu-details { background: #1a1a1a; padding: 10px; border-radius: 5px; font-size: 12px; color: #ccc; margin-bottom: 15px; border-left: 3px solid yellow; }
+
+/* تنسيق صورة الغلاف */
+.cover-img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -58,15 +60,44 @@
         </div>
         <div id="licenseButtons"></div>
     </div>
-    <div id="step2" style="display:none;">
-        <div style="color:var(--primary); font-weight:bold; margin-bottom:10px;">Payment Details</div>
-        <input type="text" id="pCustName" placeholder="Full Name">
-        <input type="email" id="pCustEmail" placeholder="Email Address">
-        <input type="text" id="pCustCountry" placeholder="Country">
-        <input type="text" id="pMTCN" placeholder="MTCN Number">
-        <button class="btn" onclick="processOrder()">Confirm</button>
+    <div id="buyPopover" class="buy-popover">
+    <div id="step1">
+        <div class="terms-container">
+            <div class="term-box">
+                <h4>Exclusive License</h4>
+                <p>- Full ownership rights.<br>- Unlimited audio/video streams.<br>- Can be registered on BMI/ASCAP/Content ID.<br>- Stems & WAV included.</p>
+            </div>
+            <div class="term-box">
+                <h4>Ultimate License</h4>
+                <p>- Non-exclusive rights.<br>- Up to 500,000 streams.<br>- Cannot be registered on Content ID.<br>- High Quality WAV included.</p>
+            </div>
+        </div>
+        
+        <div class="middle-text">
+            By purchasing, you agree that the wav file and your personal contract will be delivered via email after payment verification.
+        </div>
+
+        <div id="licenseButtons" class="buttons-container"></div>
     </div>
-    <button class="btn-outline" style="border:none; color:#666; font-size:12px; margin-top:5px; width:100%;" onclick="closePopover()">Cancel</button>
+
+    <div id="step2" style="display:none;">
+        <h4 style="color:var(--primary); margin-top:0;">Western Union Details</h4>
+        <div class="wu-details">
+            <strong>Send Payment To:</strong><br>
+            Name: [اكتب اسمك الكامل هنا]<br>
+            Country: [اكتب بلدك هنا]<br>
+            Phone/ID: [اكتب رقمك أو هويتك هنا]
+        </div>
+        
+        <input type="text" id="pCustName" placeholder="Your Full Name">
+        <input type="email" id="pCustEmail" placeholder="Your Email Address">
+        <input type="text" id="pCustCountry" placeholder="Your Country">
+        <input type="text" id="pMTCN" placeholder="MTCN Code (10 Digits)">
+        
+        <button class="btn" style="width:100%;" onclick="processOrder()">Confirm Payment</button>
+    </div>
+    
+    <button class="btn-outline" style="border:none; margin-top:10px; width:100%; color:#888;" onclick="closePopover()">Cancel</button>
 </div>
 
 <header>
@@ -81,6 +112,11 @@
             <input type="file" id="bFile" accept="audio/mp3" class="full" style="color: #888;">
             <input type="number" id="pExc" placeholder="Exclusive Price ($)">
             <input type="number" id="pUlt" placeholder="Ultimate Price ($)">
+            <input type="text" id="addCoverUrl" placeholder="Cover Image URL">
+
+<label style="color:white;">
+    <input type="checkbox" id="addIsFree"> Make this Beat FREE (MP3 Download)
+</label>
             <button id="uploadBtn" class="btn full" onclick="saveBeat()">Publish Beat</button>
         </div>
     </div>
@@ -128,18 +164,23 @@
         }
     }
 
-   function renderBeats(dataToDisplay) {
+ function renderBeats(dataToDisplay) {
         const listDiv = document.getElementById('list');
         listDiv.innerHTML = dataToDisplay.map(b => `
             <div class="beat-card">
                 ${b.is_sold ? '<span class="sold-tag">SOLD</span>' : ''}
+                
+                <img src="${b.cover_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60'}" class="cover-img" alt="Cover">
+                
                 <span class="title">${b.title}</span>
                 <audio src="${b.audio_url}" controls controlsList="nodownload"></audio>
                 
                 <div class="price-row">
-                    <button class="btn" onclick="handleBuy(event, '${b.title}', ${b.exc_price}, ${b.ult_price})">
-                        BUY LICENSE
-                    </button>
+                    ${b.is_free ? `
+                        <a href="${b.audio_url}" download class="btn" style="width:100%; text-align:center; text-decoration:none; display:block;">Download Free MP3</a>
+                    ` : `
+                        <button class="btn" onclick="handleBuy(event, '${b.title}', ${b.exc_price}, ${b.ult_price})">BUY LICENSE</button>
+                    `}
                 </div>
 
                 ${isAdminMode ? `
@@ -157,21 +198,24 @@ let selectedLicense = {};
         event.stopPropagation();
         activeBeat = { name: beatName, exc: exc_price, ult: ult_price };
         
-        // إظهار واجهة الشروط أولاً
         document.getElementById('step1').style.display = 'block';
         document.getElementById('step2').style.display = 'none';
         
         const buttonsDiv = document.getElementById('licenseButtons');
         buttonsDiv.innerHTML = `
-            <button class="btn-outline" style="width:100%; margin-bottom:8px;" onclick="goToStep2('Exclusive', ${exc_price})">Exclusive License ($${exc_price})</button>
-            <button class="btn" style="width:100%;" onclick="goToStep2('Ultimate', ${ult_price})">Ultimate License ($${ult_price})</button>
+            <button class="btn-outline" style="flex:1;" onclick="goToStep2('Exclusive', ${exc_price})">Exclusive ($${exc_price})</button>
+            <button class="btn" style="flex:1;" onclick="goToStep2('Ultimate', ${ult_price})">Ultimate ($${ult_price})</button>
         `;
 
         const popover = document.getElementById('buyPopover');
         const rect = event.currentTarget.getBoundingClientRect();
         popover.style.display = 'block';
         popover.style.top = (window.scrollY + rect.bottom + 10) + 'px';
-        popover.style.left = (rect.left) + 'px';
+        
+        // توسيط النافذة
+        let leftPos = rect.left - 100; 
+        if(leftPos < 10) leftPos = 10;
+        popover.style.left = leftPos + 'px';
     }
 
     function goToStep2(type, price) {
@@ -187,47 +231,52 @@ let selectedLicense = {};
         const country = document.getElementById('pCustCountry').value;
         const mtcn = document.getElementById('pMTCN').value;
 
-        if(!name || !email || !country || !mtcn) return alert("Please fill all fields!");
+        if(!name || !email || !country || !mtcn) {
+            return alert("Please fill all your details and the MTCN code.");
+        }
 
-        // 1. توليد العقد المعبأ تلقائياً (Self-filling)
+        // --- رسالة التأكيد مع خيار الإلغاء (OK / Cancel) ---
+        const isConfirmed = confirm("Are you sure you want to confirm this order?\n\nPlease verify that your MTCN code is correct.");
+        
+        // إذا ضغط الحريف على Cancel (إلغاء)، يتم إيقاف العملية
+        if (!isConfirmed) {
+            return; 
+        }
+
+        // توليد العقد (PDF) أوتوماتيكياً باسمك واسم الحريف
         const doc = new jsPDF();
         doc.setFont("helvetica", "bold");
         doc.text("CIMWAV LICENSE AGREEMENT", 105, 20, { align: "center" });
         doc.setFontSize(10);
-        doc.text(`Buyer Name: ${name}`, 20, 40);
+        doc.text(`Licensee Name: ${name}`, 20, 40);
         doc.text(`Email: ${email}`, 20, 45);
-        doc.text(`Beat Title: ${activeBeat.name}`, 20, 55);
-        doc.text(`License Type: ${selectedLicense.type}`, 20, 60);
-        doc.text(`MTCN Code: ${mtcn}`, 20, 65);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 70);
-        doc.text("Signature: ROUNI - CIMWAV PRODUCTIONS", 20, 100);
+        doc.text(`Country: ${country}`, 20, 50);
+        doc.text(`Beat Title: ${activeBeat.name}`, 20, 65);
+        doc.text(`License Granted: ${selectedLicense.type}`, 20, 70);
+        doc.text(`Transaction MTCN: ${mtcn}`, 20, 75);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 80);
+        doc.text("Signature: ROUNI - CIMWAV PRODUCTIONS", 20, 110);
 
-        // تحميل العقد لك (ليكون جاهزاً للإرسال)
+        // تحميل العقد كملف جاهز لتقوم أنت بإرساله لاحقاً
         doc.save(`Contract_${activeBeat.name}_${name}.pdf`);
 
-        // 2. إظهار الرسالة الإنجليزية للمستخدم
-        alert("The audio file will be sent along with your chosen license contract in less than 24 hours after order confirmation.");
+        // رسالة التأكيد النهائية
+        alert("Thank you! Your order has been confirmed.\n\nThe WAV file and your licensed contract will be delivered to your email after payment verification.");
 
-   // 3. إرسال البيانات لك عبر الإيميل
-        const subject = `Order: ${activeBeat.name}`;
-        const body = `Hi Rouni,\n\nDetails:\nName: ${name}\nEmail: ${email}\nMTCN: ${mtcn}\nLicense: ${selectedLicense.type}`;
-        window.location.href = `mailto:9takr7799@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        
+        // مكان كود الإيميل الصامت (EmailJS) مستقبلاً يوضع هنا.
+        // في الوقت الحالي، يمكنك استخدام Supabase لحفظ الطلب في جدول (Orders) إذا أردت.
+
         closePopover();
-    } // <-- هذا القوس يغلق دالة processOrder
-
-    // دالة إغلاق النافذة المنبثقة (يجب أن تكون مستقلة)
-    function closePopover() {
-        const popover = document.getElementById('buyPopover');
-        if (popover) {
-            popover.style.display = 'none';
-        }
     }
 
-    // إغلاق النافذة عند الضغط في أي مكان خارجها
+    function closePopover() {
+        const popover = document.getElementById('buyPopover');
+        if(popover) popover.style.display = 'none';
+    }
+
+    // إغلاق النافذة عند الضغط خارجها
     window.onclick = function(e) { 
         const popover = document.getElementById('buyPopover');
-        // إذا ضغط المستخدم خارج النافذة ولم يضغط على زر الشراء نفسه
         if (popover && !e.target.closest('#buyPopover') && !e.target.closest('.btn')) {
             closePopover();
         }
