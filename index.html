@@ -40,10 +40,10 @@
         <h3 style="margin-top:0; color: var(--primary);">Admin Control</h3>
         <div class="admin-grid">
             <input type="text" id="bTitle" placeholder="Beat Name" class="full">
-            <input type="text" id="bUrl" placeholder="Direct MP3 Link" class="full">
+            <input type="file" id="bFile" accept="audio/mp3" class="full" style="color: #888;">
             <input type="number" id="pExc" placeholder="Exclusive Price ($)">
             <input type="number" id="pUlt" placeholder="Ultimate Price ($)">
-            <button class="btn full" onclick="saveBeat()">Publish Beat</button>
+            <button id="uploadBtn" class="btn full" onclick="saveBeat()">Publish Beat</button>
         </div>
     </div>
 
@@ -117,23 +117,60 @@
         `).join('');
     }
 
-    async function saveBeat() {
+   async function saveBeat() {
         const title = document.getElementById('bTitle').value;
-        const audio_url = document.getElementById('bUrl').value;
-        // وضعنا 0 كقيمة افتراضية إذا تركت السعر فارغاً لتجنب الأخطاء
+        const fileInput = document.getElementById('bFile');
         const exc_price = document.getElementById('pExc').value || 0;
         const ult_price = document.getElementById('pUlt').value || 0;
-        
-        if(!title || !audio_url) return alert("Please fill all fields");
+        const btn = document.getElementById('uploadBtn');
 
-        const { error } = await supabaseClient.from('beats').insert([{title, audio_url, exc_price, ult_price}]);
+        if (!title || fileInput.files.length === 0) {
+            return alert("Please enter a title and select an MP3 file!");
+        }
+
+        const file = fileInput.files[0];
+        const fileName = `${Date.now()}-${file.name}`; // اسم فريد للملف
         
-        // هنا تم وضع كشف الأخطاء في المكان الصحيح (عند النشر)
-        if (error) {
-            alert("لم ينجح الرفع والسبب هو: " + error.message);
-        } else {
-            alert("تم النشر بنجاااااح!");
-            loadData();
+        btn.disabled = true;
+        btn.innerText = "Uploading... Please wait";
+
+        try {
+            // 1. رفع الملف إلى Supabase Storage
+            // تأكد أن اسم الـ Bucket هو 'beats-files' كما أنشأته
+            const { data: uploadData, error: uploadError } = await supabaseClient
+                .storage
+                .from('beats-files') 
+                .upload(fileName, file);
+
+            if (uploadError) throw uploadError;
+
+            // 2. الحصول على الرابط المباشر للملف المرفوع
+            const { data: urlData } = supabaseClient
+                .storage
+                .from('beats-files')
+                .getPublicUrl(fileName);
+
+            const audio_url = urlData.publicUrl;
+
+            // 3. حفظ البيانات في الجدول (Database)
+            const { error: dbError } = await supabaseClient
+                .from('beats')
+                .insert([{ title, audio_url, exc_price, ult_price }]);
+
+            if (dbError) throw dbError;
+
+            alert("Published Successfully! 🔥");
+            loadData(); // تحديث القائمة
+            
+            // تنظيف الخانات بعد النجاح
+            document.getElementById('bTitle').value = '';
+            fileInput.value = '';
+            
+        } catch (err) {
+            alert("Error: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = "Publish Beat";
         }
     }
 
