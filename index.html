@@ -208,16 +208,30 @@ let selectedLicense = {};
         // 2. إظهار الرسالة الإنجليزية للمستخدم
         alert("The audio file will be sent along with your chosen license contract in less than 24 hours after order confirmation.");
 
-        // 3. إرسال البيانات لك عبر الإيميل
+   // 3. إرسال البيانات لك عبر الإيميل
         const subject = `Order: ${activeBeat.name}`;
         const body = `Hi Rouni,\n\nDetails:\nName: ${name}\nEmail: ${email}\nMTCN: ${mtcn}\nLicense: ${selectedLicense.type}`;
         window.location.href = `mailto:rouni.beats@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         
         closePopover();
-    }
-}
-    window.onclick = function(e) { if (!e.target.closest('#buyPopover')) closePopover(); };
+    } // <-- هذا القوس يغلق دالة processOrder
 
+    // دالة إغلاق النافذة المنبثقة (يجب أن تكون مستقلة)
+    function closePopover() {
+        const popover = document.getElementById('buyPopover');
+        if (popover) {
+            popover.style.display = 'none';
+        }
+    }
+
+    // إغلاق النافذة عند الضغط في أي مكان خارجها
+    window.onclick = function(e) { 
+        const popover = document.getElementById('buyPopover');
+        // إذا ضغط المستخدم خارج النافذة ولم يضغط على زر الشراء نفسه
+        if (popover && !e.target.closest('#buyPopover') && !e.target.closest('.btn')) {
+            closePopover();
+        }
+    };
     async function saveBeat() {
         const title = document.getElementById('bTitle').value;
         const fileInput = document.getElementById('bFile');
