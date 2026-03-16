@@ -4,9 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cimwav | Premium Beats</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+  (function(){
+      // استبدل YOUR_PUBLIC_KEY بالمفتاح الذي ستحصل عليه من موقع EmailJS
+      emailjs.init("YOUR_PUBLIC_KEY");
+  })();
+</script>
+
+<style>
+/* التنسيقات الخاصة بك تبدأ من هنا */
         :root { --primary: #00ff88; --bg: #050505; --card: #111; --text: #fff; --border: #222; }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 100px; text-align: center; }
         header { padding: 40px 20px; border-bottom: 1px solid var(--border); }
@@ -80,23 +90,34 @@
 
 <div id="buyPopover" class="buy-popover">
     <div id="step1">
-        <div class="terms-container">
-            <div class="term-box">
-                <h4>Exclusive License</h4>
-                <p>- Full ownership rights.<br>- Unlimited streams.<br>- Register on BMI/ASCAP.<br>- Stems & WAV included.</p>
-            </div>
-            <div class="term-box">
-                <h4>Ultimate License</h4>
-                <p>- Non-exclusive.<br>- Up to 500k streams.<br>- No Content ID registry.<br>- High Quality WAV.</p>
-            </div>
+    <div class="terms-container">
+        <div class="term-box">
+            <h4>Commercial Film License (Exclusive)</h4>
+            <p>
+                - **Full Commercial Rights:** For Movies, TV & Games.<br>
+                - **100% Royalty Free:** No additional fees.<br>
+                - **Synchronization Rights:** Unlimited video projects.<br>
+                - **Master Files:** High-End WAV + Orchestral Stems.<br>
+                - **Ownership:** Exclusive rights to the composition.
+            </p>
         </div>
-        
-        <div class="middle-text">
-            By purchasing, you agree that the wav file and your personal contract will be delivered via email after payment verification.
+        <div class="term-box">
+            <h4>Standard Sync License (Non-Exclusive)</h4>
+            <p>
+                - **Digital Media:** YouTube, Social Media, Shorts.<br>
+                - **Up to 500k Views:** Worldwide distribution.<br>
+                - **Non-Exclusive:** Composition remains in library.<br>
+                - **Audio Quality:** Professional 24-bit WAV file.
+            </p>
         </div>
-
-        <div id="licenseButtons" class="buttons-container"></div>
     </div>
+    
+    <div class="middle-text">
+        By purchasing, you agree that the score files and your production contract will be delivered via email after payment verification.
+    </div>
+
+    <div id="licenseButtons" class="buttons-container"></div>
+</div>
 
     <div id="step2" style="display:none;">
         <h4 style="color:var(--primary); margin-top:0;">Western Union Details</h4>
@@ -234,35 +255,76 @@
         document.getElementById('step2').style.display = 'block';
     }
 
-    async function processOrder() {
-        const { jsPDF } = window.jspdf;
-        const name = document.getElementById('pCustName').value;
-        const email = document.getElementById('pCustEmail').value;
-        const country = document.getElementById('pCustCountry').value;
-        const mtcn = document.getElementById('pMTCN').value;
+async function processOrder() {
+    const { jsPDF } = window.jspdf;
+    const name = document.getElementById('pCustName').value;
+    const email = document.getElementById('pCustEmail').value;
+    const country = document.getElementById('pCustCountry').value;
+    const mtcn = document.getElementById('pMTCN').value;
 
-        if(!name || !email || !country || !mtcn) return alert("Please fill all details!");
+    if(!name || !email || !country || !mtcn) return alert("Please fill all details!");
+    if (!confirm("Confirm your order and download the payment draft?")) return;
 
-        if (!confirm("Confirm order? You agree to the terms.")) return;
+    // --- 1. نسخة الزبون (المرفقة بالتحذير - Watermarked) ---
+    const customerDoc = new jsPDF();
+    customerDoc.setTextColor(200, 0, 0); // لون أحمر خفيف للتحذير
+    customerDoc.setFontSize(25);
+    customerDoc.text("PAYMENT PENDING - NOT A LICENSE", 105, 50, { align: "center", angle: 45 });
+    
+    customerDoc.setTextColor(0, 0, 0); // العودة للأسود
+    customerDoc.setFontSize(18);
+    customerDoc.text("PAYMENT CONFIRMATION DRAFT", 105, 20, { align: "center" });
+    customerDoc.setFontSize(10);
+    customerDoc.text(`This is a draft for order verification.`, 20, 40);
+    customerDoc.text(`Final License for [${activeBeat.name}] will be sent after MTCN validation.`, 20, 50);
+    customerDoc.save(`DRAFT_Order_${activeBeat.name}.pdf`);
 
-        const doc = new jsPDF();
-        doc.setFont("helvetica", "bold");
-        doc.text("CIMWAV LICENSE AGREEMENT", 105, 20, { align: "center" });
-        doc.setFontSize(10);
-        doc.text(`Licensee Name: ${name}`, 20, 40);
-        doc.text(`Email: ${email}`, 20, 45);
-        doc.text(`Beat: ${activeBeat.name}`, 20, 55);
-        doc.text(`License: ${selectedLicense.type}`, 20, 60);
-        doc.text(`MTCN: ${mtcn}`, 20, 70);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 80);
-        doc.text("Signature: ROUNI - CIMWAV PRODUCTIONS", 20, 110);
-        doc.save(`Contract_${activeBeat.name}.pdf`);
-
-        alert("Confirmed! WAV & Contract will be sent to your email after verification.");
-        closePopover();
+    // --- 2. نسخة الأدمن (التي ستصلك أنت - كاملة التفاصيل) ---
+    const adminDoc = new jsPDF();
+    adminDoc.setFont("helvetica", "bold");
+    adminDoc.text("OFFICIAL CINEMATIC LICENSE (READY TO SEND)", 105, 20, { align: "center" });
+    adminDoc.setFontSize(10);
+    adminDoc.text(`License Type: ${selectedLicense.type}`, 20, 40);
+    adminDoc.text(`Buyer Name: ${name}`, 20, 50);
+    adminDoc.text(`Buyer Email: ${email}`, 20, 60);
+    adminDoc.text(`MTCN Code: ${mtcn}`, 20, 70);
+    
+    // تفاصيل العقد الكاملة حسب النسخة
+    if (selectedLicense.type === 'Commercial') {
+        adminDoc.text("FULL OWNERSHIP GRANTED - 100% ROYALTY FREE", 20, 90);
+    } else {
+        adminDoc.text("STANDARD SYNC RIGHTS - NON-EXCLUSIVE", 20, 90);
     }
 
-    function closePopover() { document.getElementById('buyPopover').style.display = 'none'; }
+    // --- 3. إرسال الإيميل التلقائي إليك (EmailJS) ---
+    // ملاحظة: يجب إعداد حساب EmailJS ووضع الـ IDs الخاصة بك هنا
+ const emailParams = {
+        from_name: name,
+        reply_to: email,
+        mtcn_code: mtcn,
+        beat_name: activeBeat.name,
+        license_type: selectedLicense.type,
+        message: `New Order from ${country}. Customer is waiting for the final PDF.`
+    };
+
+    // إرسال الإيميل عبر EmailJS
+    emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', emailParams)
+        .then(() => {
+            // النجاح: تظهر الرسالة ثم تغلق النافذة
+            alert("Order Sent! Your draft is downloaded. Final files will arrive at your email after verification.");
+            closePopover(); 
+        })
+        .catch((err) => {
+            // الفشل: لا نغلق النافذة لكي يحاول مرة أخرى
+            alert("Failed to send order. Please check your internet or contact support.");
+            console.error("EmailJS Error:", err);
+        });
+} // نهاية دالة processOrder
+
+function closePopover() { 
+    const popover = document.getElementById('buyPopover');
+    if (popover) popover.style.display = 'none'; 
+}
 
     window.onclick = function(e) {
         const popover = document.getElementById('buyPopover');
