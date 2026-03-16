@@ -9,22 +9,25 @@
         :root { --primary: #00ff88; --bg: #050505; --card: #111; --text: #fff; --border: #222; }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 100px; text-align: center; }
         header { padding: 40px 20px; border-bottom: 1px solid var(--border); }
-        <div id="buyPopover" class="buy-popover">
-    <div id="popTitle" style="color:var(--primary); font-weight:bold; margin-bottom:8px;">Checkout</div>
-    <div class="pop-info">
-        <strong>Western Union Details:</strong><br>
-        Name: [اسمك الكامل هنا]<br>
-        City: [مدينتك، بلدك]
-    </div>
-    <input type="text" id="pCustName" placeholder="Your Full Name">
-    <input type="text" id="pCustCountry" placeholder="Your Country/City">
-    <button class="btn" style="padding:8px; font-size:13px;" onclick="confirmPurchase()">Confirm Order</button>
-    <button class="btn-outline" style="padding:5px; border:none; color:#666; font-size:12px; margin-top:5px; width:100%;" onclick="closePopover()">Cancel</button>
-</div>
         header h1 { letter-spacing: 8px; text-transform: uppercase; margin: 0; pointer-events: none; }
         .container { max-width: 800px; margin: auto; padding: 20px; }
-        .search-box { width: 100%; padding: 15px; background: var(--card); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 40px; font-size: 16px; outline: none; }
+        .search-box { width: 100%; padding: 15px; background: var(--card); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 40px; font-size: 16px; outline: none; box-sizing: border-box; }
         
+        /* تصميم النافذة الصغيرة Popover */
+        .buy-popover {
+            display: none;
+            position: absolute; 
+            background: #111;
+            border: 2px solid var(--primary);
+            padding: 15px;
+            border-radius: 12px;
+            z-index: 1000;
+            width: 260px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+        }
+        .pop-info { font-size: 11px; color: #888; background: #1a1a1a; padding: 10px; border-radius: 5px; margin-bottom: 10px; line-height: 1.4; text-align: left; }
+        .buy-popover input { width: 100%; margin-bottom: 8px; padding: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 5px; box-sizing: border-box; font-size: 13px; }
+
         #adminPanel { display: none; background: #161616; padding: 20px; border: 1px solid var(--primary); border-radius: 12px; margin-bottom: 40px; text-align: left; }
         .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .admin-grid input { padding: 12px; border-radius: 6px; border: 1px solid #333; background: #000; color: #fff; }
@@ -34,46 +37,27 @@
         .title { font-size: 24px; font-weight: bold; margin-bottom: 15px; display: block; color: var(--primary); }
         audio { width: 100%; margin: 15px 0; filter: invert(1); }
         .price-row { display: flex; gap: 10px; }
-        .btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; text-align: center; text-decoration: none; }
+        .btn { background: var(--primary); color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; flex: 1; text-align: center; text-decoration: none; display: block; width: 100%; }
         .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 12px; border-radius: 8px; cursor: pointer; flex: 1; }
         .sold-tag { position: absolute; top: 15px; right: 15px; background: #ff3e3e; color: #fff; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
 
         footer { position: fixed; bottom: 0; width: 100%; background: #000; padding: 20px; border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 20px; z-index: 100; }
-/* تصميم نافذة الشراء الصغيرة */
-.buy-popover {
-    display: none;
-    position: absolute; 
-    background: #111;
-    border: 1px solid var(--primary);
-    padding: 15px;
-    border-radius: 10px;
-    z-index: 1000;
-    width: 260px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-}
-.buy-popover input {
-    width: 100%;
-    margin-bottom: 8px;
-    padding: 10px;
-    background: #000;
-    border: 1px solid #333;
-    color: white;
-    border-radius: 5px;
-    box-sizing: border-box;
-    font-size: 13px;
-}
-.pop-info {
-    font-size: 11px;
-    color: #888;
-    background: #1a1a1a;
-    padding: 8px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-    line-height: 1.4;
-}
     </style>
 </head>
 <body>
+
+<div id="buyPopover" class="buy-popover">
+    <div id="popTitle" style="color:var(--primary); font-weight:bold; margin-bottom:8px;">Checkout</div>
+    <div class="pop-info">
+        <strong>Western Union Details:</strong><br>
+        Name: [ضع اسمك الكامل هنا]<br>
+        City: [مدينتك، بلدك]
+    </div>
+    <input type="text" id="pCustName" placeholder="Your Full Name">
+    <input type="text" id="pCustCountry" placeholder="Your Country/City">
+    <button class="btn" style="padding:10px; font-size:13px;" onclick="confirmPurchase()">Confirm Order</button>
+    <button class="btn-outline" style="padding:5px; border:none; color:#666; font-size:12px; margin-top:5px; width:100%;" onclick="closePopover()">Cancel</button>
+</div>
 
 <header>
     <h1>CIMWAV</h1>
@@ -101,7 +85,6 @@
 </footer>
 
 <script>
-    // --- 1. CONFIGURATION ---
     const SB_URL = 'https://uuljpvwwztsgsrlpnjrm.supabase.co'; 
     const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV1bGpwdnd3enRzZ3NybHBuanJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NzM1OTksImV4cCI6MjA4OTE0OTU5OX0.b4JTcPDVuFz7uLyQdwF3yRSYa1llu6F141EAWLyFR4U';
     
@@ -109,8 +92,8 @@
 
     let isAdminMode = false;
     let beatsData = [];
+    let activeBeat = {};
 
-    // --- 2. SECRET ACCESS ---
     function checkSecret() {
         if (window.location.hash === "#admin") {
             let p = prompt("Enter Secret Key:");
@@ -126,13 +109,8 @@
 
     window.addEventListener('hashchange', checkSecret);
 
-    // --- 3. FUNCTIONS ---
     async function loadData() {
-        const { data, error } = await supabaseClient
-            .from('beats')
-            .select('*') 
-            .order('created_at', { ascending: false });
-
+        const { data } = await supabaseClient.from('beats').select('*').order('created_at', { ascending: false });
         if (data) {
             beatsData = data;
             renderBeats(beatsData);
@@ -148,12 +126,8 @@
                 <span class="title">${b.title}</span>
                 <audio src="${b.audio_url}" controls controlsList="nodownload"></audio>
                 <div class="price-row">
-                   <button class="btn-outline" onclick="handleBuy(event, '${b.title}', 'Exclusive', ${b.exc_price})">
-    Exclusive: $${b.exc_price}
-</button>
-<button class="btn" onclick="handleBuy(event, '${b.title}', 'Ultimate', ${b.ult_price})">
-    Ultimate: $${b.ult_price}
-</button>
+                    <button class="btn-outline" onclick="handleBuy(event, '${b.title}', 'Exclusive', ${b.exc_price})">Exclusive: $${b.exc_price}</button>
+                    <button class="btn" onclick="handleBuy(event, '${b.title}', 'Ultimate', ${b.ult_price})">Ultimate: $${b.ult_price}</button>
                 </div>
                 ${isAdminMode ? `
                     <div style="margin-top:15px; border-top:1px solid #333; padding-top:15px; display:flex; gap:10px;">
@@ -165,120 +139,55 @@
         `).join('');
     }
 
-   async function saveBeat() {
+    function handleBuy(event, beatName, licenseType, price) {
+        event.stopPropagation();
+        activeBeat = { name: beatName, license: licenseType, price: price };
+        const popover = document.getElementById('buyPopover');
+        const button = event.currentTarget; 
+        const rect = button.getBoundingClientRect();
+        document.getElementById('popTitle').innerText = `${licenseType}: $${price}`;
+        popover.style.display = 'block';
+        popover.style.top = (window.scrollY + rect.bottom + 10) + 'px'; 
+        popover.style.left = (rect.left) + 'px';
+    }
+
+    function closePopover() { document.getElementById('buyPopover').style.display = 'none'; }
+
+    function confirmPurchase() {
+        const name = document.getElementById('pCustName').value;
+        const country = document.getElementById('pCustCountry').value;
+        if(!name || !country) return alert("Please fill your info");
+        const subject = `Order: ${activeBeat.name} (${activeBeat.license})`;
+        const body = `Beat: ${activeBeat.name}\nLicense: ${activeBeat.license}\nPrice: $${activeBeat.price}\n\nBuyer: ${name}\nCountry: ${country}`;
+        window.location.href = `mailto:rouni.beats@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        closePopover();
+    }
+
+    window.onclick = function(e) { if (!e.target.closest('#buyPopover')) closePopover(); };
+
+    async function saveBeat() {
         const title = document.getElementById('bTitle').value;
         const fileInput = document.getElementById('bFile');
         const exc_price = document.getElementById('pExc').value || 0;
         const ult_price = document.getElementById('pUlt').value || 0;
         const btn = document.getElementById('uploadBtn');
-
-        if (!title || fileInput.files.length === 0) {
-            return alert("Please enter a title and select an MP3 file!");
-        }
-
+        if (!title || fileInput.files.length === 0) return alert("Please enter info!");
         const file = fileInput.files[0];
-        const fileName = `${Date.now()}-${file.name}`; // اسم فريد للملف
-        
-        btn.disabled = true;
-        btn.innerText = "Uploading... Please wait";
-
+        const fileName = `${Date.now()}-${file.name}`;
+        btn.disabled = true; btn.innerText = "Uploading...";
         try {
-            // 1. رفع الملف إلى Supabase Storage
-            // تأكد أن اسم الـ Bucket هو 'beats-files' كما أنشأته
-            const { data: uploadData, error: uploadError } = await supabaseClient
-                .storage
-                .from('beats-files') 
-                .upload(fileName, file);
-
-            if (uploadError) throw uploadError;
-
-            // 2. الحصول على الرابط المباشر للملف المرفوع
-            const { data: urlData } = supabaseClient
-                .storage
-                .from('beats-files')
-                .getPublicUrl(fileName);
-
-            const audio_url = urlData.publicUrl;
-
-            // 3. حفظ البيانات في الجدول (Database)
-            const { error: dbError } = await supabaseClient
-                .from('beats')
-                .insert([{ title, audio_url, exc_price, ult_price }]);
-
-            if (dbError) throw dbError;
-
-            alert("Published Successfully! 🔥");
-            loadData(); // تحديث القائمة
-            
-            // تنظيف الخانات بعد النجاح
-            document.getElementById('bTitle').value = '';
-            fileInput.value = '';
-            
-        } catch (err) {
-            alert("Error: " + err.message);
-        } finally {
-            btn.disabled = false;
-            btn.innerText = "Publish Beat";
-        }
+            await supabaseClient.storage.from('beats-files').upload(fileName, file);
+            const { data: urlData } = supabaseClient.storage.from('beats-files').getPublicUrl(fileName);
+            await supabaseClient.from('beats').insert([{ title, audio_url: urlData.publicUrl, exc_price, ult_price }]);
+            alert("Published! 🔥"); loadData();
+        } catch (err) { alert("Error: " + err.message); }
+        finally { btn.disabled = false; btn.innerText = "Publish Beat"; }
     }
 
-    async function deleteItem(id) {
-        if(confirm("Are you sure?")) {
-            await supabaseClient.from('beats').delete().eq('id', id);
-            loadData();
-        }
-    }
-
-    async function markAsSold(id) {
-        await supabaseClient.from('beats').update({is_sold: false}).eq('id', id);
-        loadData(); // هنا أصلحنا الخطأ الذي كان يمنع الموقع من العمل
-    }
-
-    function runSearch() {
-        const term = document.getElementById('mainSearchBar').value.toLowerCase();
-        const filtered = beatsData.filter(b => b.title.toLowerCase().includes(term));
-        renderBeats(filtered);
-    }
-
-   let activeBeat = {};
-
-function handleBuy(event, beatName, licenseType, price) {
-    event.stopPropagation(); // يمنع إغلاق النافذة فور فتحها
-    activeBeat = { name: beatName, license: licenseType, price: price };
-    
-    const popover = document.getElementById('buyPopover');
-    const button = event.currentTarget; 
-    const rect = button.getBoundingClientRect();
-
-    document.getElementById('popTitle').innerText = `${licenseType}: $${price}`;
-    
-    popover.style.display = 'block';
-    // تحديد الموقع: يضيف ارتفاع التمرير (scroll) وموقع الزر
-    popover.style.top = (window.scrollY + rect.bottom + 5) + 'px'; 
-    popover.style.left = (rect.left) + 'px';
-}
-    function closePopover() {
-    document.getElementById('buyPopover').style.display = 'none';
-}
-
-function confirmPurchase() {
-    const name = document.getElementById('pCustName').value;
-    const country = document.getElementById('pCustCountry').value;
-    if(!name || !country) return alert("Please fill your info");
-
-    const subject = `Order: ${activeBeat.name} (${activeBeat.license})`;
-    const body = `Beat: ${activeBeat.name}\nLicense: ${activeBeat.license}\nPrice: $${activeBeat.price}\n\nBuyer: ${name}\nCountry: ${country}`;
-    
-    window.location.href = `mailto:rouni.beats@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    closePopover();
-}
-
-// إغلاق النافذة عند الضغط في أي مكان خارجها
-window.onclick = function(e) {
-    if (!e.target.closest('#buyPopover')) closePopover();
-};
-
-    function contactMe() { window.location.href = "mailto:your-email@gmail.com"; }
+    async function deleteItem(id) { if(confirm("Are you sure?")) { await supabaseClient.from('beats').delete().eq('id', id); loadData(); } }
+    async function markAsSold(id) { await supabaseClient.from('beats').update({is_sold: true}).eq('id', id); loadData(); }
+    function runSearch() { const term = document.getElementById('mainSearchBar').value.toLowerCase(); renderBeats(beatsData.filter(b => b.title.toLowerCase().includes(term))); }
+    function contactMe() { window.location.href = "mailto:rouni.beats@gmail.com"; }
     function shareSite() { prompt("Copy site link:", window.location.href.split('#')[0]); }
 
     loadData();
