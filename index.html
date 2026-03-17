@@ -266,24 +266,63 @@ async function processOrder() {
     if(!name || !email || !country || !mtcn) return alert("Please fill all details!");
     if (!confirm("Confirm your order and download the payment draft?")) return;
 
-    // --- 1. نسخة الزبون (المرفقة بالتحذير - Watermarked) ---
-    const customerDoc = new jsPDF();
-    customerDoc.setTextColor(200, 0, 0); // لون أحمر خفيف للتحذير
-    customerDoc.setFontSize(25);
-    customerDoc.text("PAYMENT PENDING - NOT A LICENSE", 105, 50, { align: "center", angle: 45 });
-    
-    customerDoc.setTextColor(0, 0, 0); // العودة للأسود
-    customerDoc.setFontSize(18);
-    customerDoc.text("PAYMENT CONFIRMATION DRAFT", 105, 20, { align: "center" });
-    customerDoc.setFontSize(10);
-    customerDoc.text(`This is a draft for order verification.`, 20, 40);
-    customerDoc.text(`Final License for [${activeBeat.name}] will be sent after MTCN validation.`, 20, 50);
-    customerDoc.save(`DRAFT_Order_${activeBeat.name}.pdf`);
+    // --- 1. PRO CUSTOMER DRAFT (Cinematic Branding) ---
+const customerDoc = new jsPDF();
+
+// إضافة خلفية مائية فنية (Watermark)
+customerDoc.setTextColor(230, 230, 230); // رمادي فاتح جداً
+customerDoc.setFontSize(50);
+customerDoc.setFont("helvetica", "bold");
+customerDoc.text("ORDER IN PROGRESS", 105, 150, { align: "center", angle: 45 });
+
+// الهيدر (Header)
+customerDoc.setFillColor(30, 30, 30); // لون أسود سينمائي
+customerDoc.rect(0, 0, 210, 30, 'F');
+customerDoc.setTextColor(255, 255, 255);
+customerDoc.setFontSize(16);
+customerDoc.text("CIMWAV | FILM SCORE ARCHIVE", 105, 20, { align: "center" });
+
+// معلومات الطلب
+customerDoc.setTextColor(40, 40, 40);
+customerDoc.setFontSize(10);
+customerDoc.setFont("helvetica", "bold");
+customerDoc.text("ORDER SUMMARY & PAYMENT DRAFT", 20, 45);
+customerDoc.setLineWidth(0.5);
+customerDoc.line(20, 47, 190, 47);
+
+customerDoc.setFont("helvetica", "normal");
+doc.setFontSize(9);
+const date = new Date().toLocaleDateString();
+customerDoc.text(`Date: ${date}`, 20, 55);
+customerDoc.text(`Client: ${name}`, 20, 62);
+customerDoc.text(`Composition: ${activeBeat.name}`, 20, 69);
+customerDoc.text(`License Type: ${selectedLicense.type} (Exclusive/Sync)`, 20, 76);
+customerDoc.text(`Payment Method: Western Union (MTCN: ${mtcn})`, 20, 83);
+
+// صندوق التحذير الاحترافي
+customerDoc.setFillColor(245, 245, 245);
+customerDoc.rect(20, 95, 170, 35, 'F');
+customerDoc.setTextColor(150, 0, 0);
+customerDoc.setFont("helvetica", "bold");
+customerDoc.text("IMPORTANT NOTICE:", 25, 105);
+customerDoc.setFont("helvetica", "normal");
+customerDoc.setFontSize(8.5);
+customerDoc.setTextColor(60, 60, 60);
+customerDoc.text("• This document serves as a payment verification draft only.", 25, 112);
+customerDoc.text("• The official high-quality master files and legal license will be released", 25, 118);
+customerDoc.text("  immediately via email once the MTCN code is validated.", 25, 124);
+
+// الفوتر (Footer)
+customerDoc.setFontSize(8);
+customerDoc.setTextColor(150, 150, 150);
+customerDoc.text("Cimwav Productions | Tozeur, Tunisia | support@cimwav.com", 105, 285, { align: "center" });
+
+customerDoc.save(`CIMWAV_DRAFT_${activeBeat.name}.pdf`);
 
     // --- 2. نسخة الأدمن (التي ستصلك أنت - كاملة التفاصيل) ---
     const adminDoc = new jsPDF();
     adminDoc.setFont("helvetica", "bold");
-    adminDoc.text("OFFICIAL CINEMATIC LICENSE (READY TO SEND)", 105, 20, { align: "center" });
+    adminDoc.text("OFFICIAL CINEMATIC LICENSE", 105, 20, { align: "center" });
     adminDoc.setFontSize(10);
     adminDoc.text(`License Type: ${selectedLicense.type}`, 20, 40);
     adminDoc.text(`Buyer Name: ${name}`, 20, 50);
