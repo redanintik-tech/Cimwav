@@ -318,27 +318,71 @@ customerDoc.setTextColor(150, 150, 150);
 customerDoc.text("Cimwav Productions | Tozeur, Tunisia | support@cimwav.com", 105, 285, { align: "center" });
 
 customerDoc.save(`CIMWAV_DRAFT_${activeBeat.name}.pdf`);
+// --- 2. OFFICIAL COMPOSER RECORD (The Clean Copy for Admin) ---
+const adminDoc = new jsPDF();
 
-    // --- 2. نسخة الأدمن (التي ستصلك أنت - كاملة التفاصيل) ---
-    const adminDoc = new jsPDF();
-    adminDoc.setFont("helvetica", "bold");
-    adminDoc.text("OFFICIAL CINEMATIC LICENSE", 105, 20, { align: "center" });
-    adminDoc.setFontSize(10);
-    adminDoc.text(`License Type: ${selectedLicense.type}`, 20, 40);
-    adminDoc.text(`Buyer Name: ${name}`, 20, 50);
-    adminDoc.text(`Buyer Email: ${email}`, 20, 60);
-    adminDoc.text(`MTCN Code: ${mtcn}`, 20, 70);
-    
-    // تفاصيل العقد الكاملة حسب النسخة
-    if (selectedLicense.type === 'Commercial') {
-        adminDoc.text("FULL OWNERSHIP GRANTED - 100% ROYALTY FREE", 20, 90);
-    } else {
-        adminDoc.text("STANDARD SYNC RIGHTS - NON-EXCLUSIVE", 20, 90);
-    }
+// الهيدر الرسمي (بدون خلفية مائية ليكون واضحاً للطباعة)
+adminDoc.setFillColor(20, 20, 20); // أسود داكن
+adminDoc.rect(0, 0, 210, 35, 'F');
+adminDoc.setTextColor(255, 255, 255);
+adminDoc.setFont("helvetica", "bold");
+adminDoc.setFontSize(18);
+adminDoc.text("MASTER COMPOSITION LICENSE", 105, 22, { align: "center" });
 
-    // --- 3. إرسال الإيميل التلقائي إليك (EmailJS) ---
-    // ملاحظة: يجب إعداد حساب EmailJS ووضع الـ IDs الخاصة بك هنا
- const emailParams = {
+// تفاصيل العقد والطرفين
+adminDoc.setTextColor(0, 0, 0);
+adminDoc.setFontSize(11);
+adminDoc.text("CONTRACT DETAILS", 20, 50);
+adminDoc.setLineWidth(0.2);
+adminDoc.line(20, 52, 190, 52);
+
+adminDoc.setFont("helvetica", "normal");
+adminDoc.setFontSize(10);
+const fullDate = new Date().toLocaleString();
+adminDoc.text(`Issue Date: ${fullDate}`, 20, 62);
+adminDoc.text(`Master ID: CIM-${Math.floor(Math.random() * 1000000)}`, 20, 69);
+adminDoc.text(`Composer: ROUNI (CIMWAV)`, 20, 76);
+adminDoc.text(`Licensee: ${name} (${email})`, 20, 83);
+adminDoc.text(`Work Title: "${activeBeat.name}"`, 20, 90);
+
+// قسم الرخصة (License Specifics)
+adminDoc.setFont("helvetica", "bold");
+adminDoc.text("LICENSE TYPE:", 20, 105);
+adminDoc.setFontSize(12);
+adminDoc.setTextColor(0, 50, 150); // لون أزرق رسمي للرخصة
+adminDoc.text(selectedLicense.type.toUpperCase(), 55, 105);
+
+adminDoc.setTextColor(0, 0, 0);
+adminDoc.setFontSize(9);
+adminDoc.setFont("helvetica", "normal");
+
+if (selectedLicense.type === 'Commercial') {
+    adminDoc.text("• GRANT: Full exclusive ownership and master synchronization rights.", 25, 115);
+    adminDoc.text("• TERRITORY: Worldwide, perpetual usage in any media.", 25, 122);
+    adminDoc.text("• ROYALTIES: 100% royalty-free for commercial use.", 25, 129);
+    adminDoc.text("• STATUS: Composition will be retired from public sale.", 25, 136);
+} else {
+    adminDoc.text("• GRANT: Non-exclusive synchronization license for digital media.", 25, 115);
+    adminDoc.text("• USAGE: Up to 500,000 streams/views across all platforms.", 25, 122);
+    adminDoc.text("• OWNERSHIP: The Composer retains 100% copyright ownership.", 25, 129);
+    adminDoc.text("• STATUS: Composition remains available for public licensing.", 25, 136);
+}
+
+// قسم الدفع (Payment Verification)
+adminDoc.setFont("helvetica", "bold");
+adminDoc.setFontSize(10);
+adminDoc.text("PAYMENT VERIFICATION:", 20, 155);
+adminDoc.setFont("helvetica", "normal");
+adminDoc.text(`Method: Western Union | MTCN: ${mtcn}`, 25, 165);
+adminDoc.text(`Country: ${country}`, 25, 172);
+
+// التوقيع الختامي
+adminDoc.setFont("helvetica", "bold");
+adminDoc.setFontSize(11);
+adminDoc.text("AUTHORIZED SIGNATURE: Nader - CIMWAV", 20, 200);
+
+// حفظ النسخة الخاصة بك
+adminDoc.save(`MASTER_LICENSE_${activeBeat.name}_${name}.pdf`); const emailParams = {
         from_name: name,
         reply_to: email,
         mtcn_code: mtcn,
