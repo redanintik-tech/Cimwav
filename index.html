@@ -316,7 +316,7 @@ async function processOrder() {
     customerDoc.text("Cimwav Productions | Tozeur, Tunisia | cimwav@gmail.com", 105, 285, { align: "center" });
     customerDoc.save(`CIMWAV_DRAFT_${activeBeat.name}.pdf`);
 
-    // --- 2. OFFICIAL COMPOSER RECORD (The Clean Copy for Admin) ---
+  
     const adminDoc = new jsPDF();
     adminDoc.setFillColor(20, 20, 20);
     adminDoc.rect(0, 0, 210, 35, 'F');
