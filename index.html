@@ -317,34 +317,38 @@ const referenceID = "CW-" + Math.floor(Math.random() * 1000000000);
     customerDoc.save(`CIMWAV_DRAFT_${activeBeat.name}.pdf`);
 
   const adminDoc = new jsPDF();
-adminDoc.setFillColor(20, 20, 20);
-adminDoc.rect(0, 0, 210, 35, 'F');
-adminDoc.setTextColor(255, 255, 255);
-adminDoc.setFont("helvetica", "bold");
-adminDoc.setFontSize(18);
-adminDoc.text("MASTER COMPOSITION LICENSE", 105, 22, { align: "center" });
+    
+    // الجزء العلوي (المربع الأسود)
+    adminDoc.setFillColor(20, 20, 20);
+    adminDoc.rect(0, 0, 210, 35, 'F');
+    adminDoc.setTextColor(255, 255, 255);
+    adminDoc.setFont("helvetica", "bold");
+    adminDoc.setFontSize(18);
+    adminDoc.text("MASTER COMPOSITION LICENSE", 105, 22, { align: "center" });
 
-adminDoc.setTextColor(0, 0, 0);
-adminDoc.setFontSize(11);
-adminDoc.text("CONTRACT DETAILS", 20, 50);
-adminDoc.setLineWidth(0.2);
-adminDoc.line(20, 52, 190, 52);
+    // تفاصيل العقد - تحويل اللون للأسود للكتابة على الورقة البيضاء
+    adminDoc.setTextColor(0, 0, 0); 
+    adminDoc.setFontSize(11);
+    adminDoc.text("CONTRACT DETAILS", 20, 50);
+    adminDoc.setLineWidth(0.2);
+    adminDoc.line(20, 52, 190, 52);
 
-adminDoc.setFont("helvetica", "normal");
-adminDoc.setFontSize(10);
-const fullDate = new Date().toLocaleString();
+    adminDoc.setFont("helvetica", "normal");
+    adminDoc.setFontSize(10);
+    const fullDate = new Date().toLocaleString();
+    
+    // --- هنا الجزء الذي سيظهر في المسودة ---
+    adminDoc.text(`Issue Date: ${fullDate}`, 20, 62);
+    
+    // إضافة الـ Reference ID الجديد بخط عريض لضمان ظهوره
+    adminDoc.setFont("helvetica", "bold");
+    adminDoc.text(`Reference ID: ${referenceID}`, 20, 70); 
 
-// --- التعديل الجوهري هنا ---
-adminDoc.text(`Issue Date: ${fullDate}`, 20, 62);
-
-// نستخدم نفس المتغير referenceID الذي عرفناه في السطر الأول
-adminDoc.setFont("helvetica", "bold"); 
-adminDoc.text(`Reference ID: ${referenceID}`, 20, 69); 
-
-adminDoc.setFont("helvetica", "normal");
-adminDoc.text(`Composer: Nader (CIMWAV)`, 20, 76);
-adminDoc.text(`Licensee: ${name} (${email})`, 20, 83);
-adminDoc.text(`Work Title: "${activeBeat.name}"`, 20, 90);
+    // إزاحة بقية النصوص للأسفل لكي لا يتداخل أي نص مع الآخر
+    adminDoc.setFont("helvetica", "normal");
+    adminDoc.text(`Composer: Nader (CIMWAV)`, 20, 78);
+    adminDoc.text(`Licensee: ${name} (${email})`, 20, 86);
+    adminDoc.text(`Work Title: "${activeBeat.name}"`, 20, 94);
 
     adminDoc.setFont("helvetica", "bold");
     adminDoc.text("LICENSE TYPE:", 20, 105);
