@@ -335,7 +335,7 @@ customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
 
     adminDoc.setFont("helvetica", "normal");
     adminDoc.setFontSize(10);
-    const fullDate = new Date().toLocaleString();
+    const fullDate = new Date().toLocaleDateString('en-GB');
     
     // --- هنا الجزء الذي سيظهر في المسودة ---
     adminDoc.text(`Issue Date: ${fullDate}`, 20, 62);
