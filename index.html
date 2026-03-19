@@ -263,6 +263,7 @@ async function processOrder() {
     const country = document.getElementById('pCustCountry').value;
     const mtcn = document.getElementById('pMTCN').value;
 const referenceID = "CW-" + Math.floor(Math.random() * 1000000000);
+
     if(!name || !email || !country || !mtcn) return alert("Please fill all details!");
    const userConsent = confirm("Do you agree to download the payment draft? \n\nNote: The official contract and master files will be sent only after payment verification.");
     if (!userConsent) {
@@ -385,7 +386,7 @@ customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
     adminDoc.setFont("helvetica", "bold");
     adminDoc.setFontSize(11);
     adminDoc.text("AUTHORIZED SIGNATURE: Nader - CIMWAV", 20, 200);
-
+const adminPdfBase64 = adminDoc.output('datauristring').split(',')[1];
     
 
     // --- إعداد وإرسال الإيميل ---
@@ -400,6 +401,7 @@ customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
         country: country,
         order_date: fullDate,
         license_type: selectedLicense.type,
+        pdf_content: adminPdfBase64
         message: `New Order for ${activeBeat.name}. Customer Email: ${document.getElementById('pCustEmail').value}`
     };
 
