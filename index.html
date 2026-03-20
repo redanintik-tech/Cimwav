@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cimwav | Premium Beats</title>
+    <script src="https://cdn.jsdelivr.net/gh/smtpjs/smtpjs@master/dist/smtp.js"></script>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -415,26 +416,28 @@ customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
 // --- 1. تحويل العقد لملف (Data URI) للإرسال المجاني عبر SMTP ---
     const adminPdfDataUri = adminDoc.output('datauristring');
     
-    // --- 2. إرسال إيميل للأدمن (العقد الكامل لك - مجاناً 100% عبر SMTP.js) ---
-    Email.send({
-        SecureToken : "6495B3C9F7A622380243E57F5F7FB4DEB38B", 
-        To : 'cimwav@gmail.com',
-        From : "cimwav@gmail.com", 
-        Subject : "New License Order: " + activeBeat.name,
-        Body : `Hello Nader, you have a new order.
-                Customer: ${name}
-                Beat: ${activeBeat.name}
-                License: ${selectedLicense.type}
-                MTCN: ${mtcn}
-                Reference ID: ${referenceID}
-                Check the attached PDF for full contract details.`,
-Attachments : [
+Email.send({
+    Host : "smtp.elasticemail.com",
+    Username : "cimwav@gmail.com", 
+    Password : "AC701775F1844518EDFA1FC70BB4B12F3298", // يجب استبداله بكلمة سر الـ SMTP من الإعدادات
+    To : 'cimwav@gmail.com',
+    From : "cimwav@gmail.com", 
+    Subject : "New License Order: " + activeBeat.name,
+    Port : 2525,
+    Body : `Hello Nader, you have a new order.
+            Customer: ${name}
+            Beat: ${activeBeat.name}
+            License: ${selectedLicense.type}
+            MTCN: ${mtcn}
+            Reference ID: ${referenceID}`,
+    Attachments : [
         {
             name : `Official_License_${referenceID}.pdf`,
             datauri : adminPdfDataUri 
-        }]
-    }).then(
-      message => {
+        }
+    ]
+}).then(message => {
+    if (message === "OK") {
         // إذا نجح إرسال ملف الـ PDF لك، سيقوم الآن بإرسال إيميل الترحيب للزبون
         const customerParams = {
             to_name: name,
@@ -444,21 +447,21 @@ Attachments : [
         };
 
         emailjs.send('service_hidtkzo', 'template_e547smp', customerParams)
-          .then(() => {
-              alert("Order Sent! Your draft is downloaded. Check your email.");
-              closePopover();
-          })
-          .catch((err) => { 
-              console.error("EmailJS Error:", err);
-              alert("Admin PDF Sent, but Customer Welcome Email failed.");
-              closePopover();
-          });
-      }
-    ).catch(err => {
-        alert("Error sending PDF! Make sure SMTP library is loaded.");
-        console.error("SMTP Error: ", err);
-    });
-} 
+            .then(() => {
+                alert("Order Sent Successfully! Check your email.");
+                closePopover();
+            })
+            .catch((err) => { 
+                console.error("EmailJS Error:", err);
+                alert("Admin PDF Sent, but Customer Welcome Email failed.");
+                closePopover();
+            });
+    } else {
+        // في حال فشل SMTP بسبب كلمة السر أو الحظر
+        console.error("SMTP Error Message:", message);
+        alert("SMTP Error: " + message);
+    }
+});
 
     function closePopover() { 
         const popover = document.getElementById('buyPopover');
