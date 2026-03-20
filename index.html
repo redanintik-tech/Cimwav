@@ -402,14 +402,14 @@ customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
                 MTCN: ${mtcn}
                 Reference ID: ${referenceID}
                 Check the attached PDF for full contract details.`,
-        Attachments : [
+Attachments : [
         {
             name : `Official_License_${referenceID}.pdf`,
             datauri : adminPdfDataUri 
         }]
     }).then(
       message => {
-        // --- 3. إرسال إيميل الترحيب للزبون (عبر EmailJS المجاني - رسالة نصية فقط) ---
+        // إذا نجح إرسال ملف الـ PDF لك، سيقوم الآن بإرسال إيميل الترحيب للزبون
         const customerParams = {
             to_name: name,
             to_email: document.getElementById('pCustEmail').value, 
@@ -419,21 +419,20 @@ customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
 
         emailjs.send('service_hidtkzo', 'template_e547smp', customerParams)
           .then(() => {
-              alert("Order Sent! Your draft is downloaded. Final files will arrive at your email after verification.");
+              alert("Order Sent! Your draft is downloaded. Check your email.");
               closePopover();
           })
           .catch((err) => { 
-              console.error("Customer Email Error:", err); 
-              // حتى لو فشل إيميل الزبون، المهم أن إيميلك وصلك
-              alert("Order confirmed! Please check your email.");
+              console.error("EmailJS Error:", err);
+              alert("Admin PDF Sent, but Customer Welcome Email failed.");
               closePopover();
           });
       }
-).catch(err => {
-            alert("Error sending PDF to Admin! Please try again.");
-            console.error("SMTP Error: ", err);
-        });
-    } // <--- هذا هو قوس إغلاق دالة processOrder الصحيح
+    ).catch(err => {
+        alert("Error sending PDF! Make sure SMTP library is loaded.");
+        console.error("SMTP Error: ", err);
+    });
+} 
 
     function closePopover() { 
         const popover = document.getElementById('buyPopover');
