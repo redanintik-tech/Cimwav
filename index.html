@@ -377,17 +377,16 @@ async function processOrder() {
     const adminPdfDataUri = adminDoc.output('datauristring');
     
     // --- 2. إعداد بيانات الإيميل للأدمن ---
-    const adminParams = {
-        to_email: 'cimwav@gmail.com', // يرسل لك أنت
-        customer_name: name,
-        customer_email: email, 
-        customer_country: country,
-        beat_name: activeBeat.name,
-        mtcn: mtcn,
-        reference_id: referenceID,
-        license_type: selectedLicense.type, // تمت إضافة نوع الرخصة
-        pdf_link: adminPdfDataUri
-    };
+    const emailParams = {
+    my_admin_email: 'cimwav@gmail.com', // بريدك الشخصي
+    client_email: email.trim(),         // بريد الزبون
+    client_name: name,
+    beat: activeBeat.name,
+    mtcn_code: mtcn,
+    ref_id: referenceID,
+    lic_type: selectedLicense.type,
+    pdf_url: adminPdfDataUri
+};
 
     // --- 3. إعداد بيانات الإيميل للعميل ---
     const clientParams = {
