@@ -5,20 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cimwav | Premium Beats</title>
     
-
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script>
-  (function(){
-      // استبدل YOUR_PUBLIC_KEY بالمفتاح الذي ستحصل عليه من موقع EmailJS
-      emailjs.init("z_Q62OJt0UuvVLWb-");
-  })();
-</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script>
+      (function(){
+          emailjs.init("z_Q62OJt0UuvVLWb-");
+      })();
+    </script>
 
-<style>
-/* التنسيقات الخاصة بك تبدأ من هنا */
+    <style>
         :root { --primary: #00ff88; --bg: #050505; --card: #111; --text: #fff; --border: #222; }
         body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 100px; text-align: center; }
         header { padding: 40px 20px; border-bottom: 1px solid var(--border); }
@@ -26,41 +22,21 @@
         .container { max-width: 800px; margin: auto; padding: 20px; }
         .search-box { width: 100%; padding: 15px; background: var(--card); border: 1px solid var(--border); color: white; border-radius: 8px; margin-bottom: 40px; font-size: 16px; outline: none; box-sizing: border-box; }
         
-        /* تصميم بطاقة اللحن */
         .beat-card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 12px; margin-bottom: 20px; position: relative; text-align: left; }
         .cover-img { width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 15px; border: 1px solid #222; }
         .title { display: block; font-size: 20px; font-weight: bold; margin-bottom: 10px; color: var(--primary); }
         audio { width: 100%; margin: 10px 0; }
-        .price-row {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+        .price-row { width: 100%; display: flex; justify-content: center; align-items: center; }
         .sold-tag { position: absolute; top: 10px; right: 10px; background: red; color: white; padding: 5px 15px; border-radius: 5px; font-weight: bold; z-index: 10; }
 
-        /* الأزرار */
         .btn { 
-    background: var(--primary); 
-    color: #000; 
-    border: none; 
-    padding: 12px 20px; 
-    border-radius: 6px; 
-    font-weight: bold; 
-    cursor: pointer; 
-    transition: 0.3s; 
-    width: 100%;        /* يجعل الزر يملأ الحاوية فقط */
-    max-width: 250px;   /* يمنع الزر من أن يصبح طويلاً جداً */
-    display: block; 
-    margin: 10px auto;  /* يتوسط البطاقة */
-    text-align: center;
-    text-decoration: none;
-    box-sizing: border-box;
-}
+            background: var(--primary); color: #000; border: none; padding: 12px 20px; border-radius: 6px; 
+            font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; max-width: 250px; 
+            display: block; margin: 10px auto; text-align: center; text-decoration: none; box-sizing: border-box;
+        }
         .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); padding: 10px 20px; border-radius: 6px; cursor: pointer; margin: 5px; }
         .btn:hover { opacity: 0.8; }
 
-        /* نافذة الشراء Popover */
         .buy-popover {
             display: none; position: absolute; background: #0c0c0c; border: 2px solid var(--primary);
             padding: 20px; border-radius: 12px; z-index: 1000; width: 450px; box-shadow: 0 10px 50px rgba(0,0,0,1);
@@ -79,7 +55,6 @@
         .buy-popover input { width: 100%; margin-bottom: 10px; padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 6px; box-sizing: border-box; }
         .wu-details { background: #1a1a1a; padding: 12px; border-radius: 5px; font-size: 12px; color: #ccc; margin-bottom: 15px; border-left: 4px solid #ffd700; }
 
-        /* لوحة الأدمن */
         #adminPanel { background: #111; padding: 20px; border-radius: 10px; margin-bottom: 30px; display: none; text-align: left; border: 1px solid #333; }
         .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .full { grid-column: span 2; }
@@ -183,6 +158,16 @@
     let activeBeat = {};
     let selectedLicense = {};
 
+    // إضافة خاصية تشغيل مقطع صوتي واحد فقط
+    document.addEventListener('play', function(e){
+        var audios = document.getElementsByTagName('audio');
+        for(var i = 0, len = audios.length; i < len;i++){
+            if(audios[i] != e.target){
+                audios[i].pause();
+            }
+        }
+    }, true);
+
     function checkSecret() {
         if (window.location.hash === "#admin") {
             let p = prompt("Enter Secret Key:");
@@ -259,7 +244,6 @@
     }
 
 async function processOrder() {
-    // هذا السطر يضمن استدعاء المكتبة سواء كانت umd أو عادية
     const { jsPDF } = window.jspdf ? window.jspdf : window; 
     
     if (!jsPDF) {
@@ -327,7 +311,6 @@ async function processOrder() {
 
     const adminDoc = new jsPDF();
     
-    // الجزء العلوي (المربع الأسود)
     adminDoc.setFillColor(20, 20, 20);
     adminDoc.rect(0, 0, 210, 35, 'F');
     adminDoc.setTextColor(255, 255, 255);
@@ -335,7 +318,6 @@ async function processOrder() {
     adminDoc.setFontSize(18);
     adminDoc.text("MASTER COMPOSITION LICENSE", 105, 22, { align: "center" });
 
-    // تفاصيل العقد - تحويل اللون للأسود للكتابة على الورقة البيضاء
     adminDoc.setTextColor(0, 0, 0); 
     adminDoc.setFontSize(11);
     adminDoc.text("CONTRACT DETAILS", 20, 50);
@@ -346,14 +328,11 @@ async function processOrder() {
     adminDoc.setFontSize(10);
     const fullDate = new Date().toLocaleDateString('en-GB');
     
-    // --- هنا الجزء الذي سيظهر في المسودة ---
     adminDoc.text(`Issue Date: ${fullDate}`, 20, 62);
     
-    // إضافة الـ Reference ID الجديد بخط عريض لضمان ظهوره
     adminDoc.setFont("helvetica", "bold");
     adminDoc.text(`Reference ID: ${referenceID}`, 20, 70); 
 
-    // إزاحة بقية النصوص للأسفل لكي لا يتداخل أي نص مع الآخر
     adminDoc.setFont("helvetica", "normal");
     adminDoc.text(`Composer: Nader (CIMWAV)`, 20, 78);
     adminDoc.text(`Licensee: ${name} (${email})`, 20, 86);
@@ -369,7 +348,7 @@ async function processOrder() {
     adminDoc.setFontSize(9);
     adminDoc.setFont("helvetica", "normal");
 
-    let contractText = ""; // تعريف النص للإيميل
+    let contractText = "";
     if (selectedLicense.type === 'Exclusive') {
         contractText = "GRANT: Full exclusive ownership and master synchronization rights. TERRITORY: Worldwide, perpetual usage. ROYALTIES: 100% royalty-free.";
         adminDoc.text("• GRANT: Full exclusive ownership and master synchronization rights.", 25, 115);
@@ -395,31 +374,42 @@ async function processOrder() {
     adminDoc.setFontSize(11);
     adminDoc.text("AUTHORIZED SIGNATURE: Nader - CIMWAV", 20, 200);
 
-    // --- 1. تحويل العقد لملف (Data URI) للإرسال عبر EmailJS ---
     const adminPdfDataUri = adminDoc.output('datauristring');
     
-    // --- 2. إعداد البيانات للإرسال عبر EmailJS ---
-    const emailParams = {
-        to_email: 'cimwav@gmail.com',
+    // --- 2. إعداد بيانات الإيميل للأدمن ---
+    const adminParams = {
+        to_email: 'cimwav@gmail.com', // يرسل لك أنت
         customer_name: name,
-        customer_email: email, // يمكن استخدامه للرد
+        customer_email: email, 
+        customer_country: country,
         beat_name: activeBeat.name,
-        reference_id: referenceID,
         mtcn: mtcn,
-        country: country,
-        pdf_link: adminPdfDataUri // الرابط الذي سيفتح الـ PDF
+        reference_id: referenceID,
+        license_type: selectedLicense.type, // تمت إضافة نوع الرخصة
+        pdf_link: adminPdfDataUri
     };
 
-    // --- 3. الإرسال عبر EmailJS ---
-    emailjs.send('service_hidtkzo', 'template_5sut9re', emailParams);
-    emailjs.send('service_hidtkzo', 'template_e547smp', emailParams)
+    // --- 3. إعداد بيانات الإيميل للعميل ---
+    const clientParams = {
+        to_email: email,      // يرسل لإيميل الزبون
+        to_name: name,        // لمتغير {{to_name}}
+        beat_name: activeBeat.name,
+        reference_id: referenceID
+    };
+
+    // --- 4. الإرسال عبر EmailJS بالتسلسل ---
+    emailjs.send('service_hidtkzo', 'template_5sut9re', adminParams)
         .then(() => {
-            alert("Success! Order processed and email sent.");
+            // بعد نجاح إرسال إيميل الأدمن، يتم إرسال إيميل العميل
+            return emailjs.send('service_hidtkzo', 'template_e547smp', clientParams);
+        })
+        .then(() => {
+            alert("Success! Order processed and confirmation emails sent.");
             closePopover();
         })
         .catch((err) => { 
             console.error("EmailJS Error:", err);
-            alert("Draft downloaded, but confirmation email failed.");
+            alert("Draft downloaded, but confirmation email failed. Check console for details.");
             closePopover();
         });
 }
