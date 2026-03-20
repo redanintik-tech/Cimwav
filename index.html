@@ -391,8 +391,8 @@ async function processOrder() {
 
     // --- 3. إعداد بيانات الإيميل للعميل ---
     const clientParams = {
-        to_email: email.trim(),      // يرسل لإيميل الزبون
-        to_name: name,        // لمتغير {{to_name}}
+        recipient_email: email.trim(),      // يرسل لإيميل الزبون
+        customer_name: name,        // لمتغير {{to_name}}
         beat_name: activeBeat.name,
         reference_id: referenceID
     };
