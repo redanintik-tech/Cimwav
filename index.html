@@ -6,7 +6,7 @@
     <title>Cimwav | Premium Beats</title>
     
     <script src="https://smtpjs.com/v3/smtp.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -264,10 +264,10 @@ async function processOrder() {
     const email = document.getElementById('pCustEmail').value;
     const country = document.getElementById('pCustCountry').value;
     const mtcn = document.getElementById('pMTCN').value;
-const referenceID = "CW-" + Math.floor(Math.random() * 1000000000);
+    const referenceID = "CW-" + Math.floor(Math.random() * 1000000000);
 
     if(!name || !email || !country || !mtcn) return alert("Please fill all details!");
-   const userConsent = confirm("Do you agree to download the payment draft? \n\nNote: The official contract and master files will be sent only after payment verification.");
+    const userConsent = confirm("Do you agree to download the payment draft? \n\nNote: The official contract and master files will be sent only after payment verification.");
     if (!userConsent) {
         alert("Request paused. Waiting for payment verification.");
         return; 
@@ -301,7 +301,7 @@ const referenceID = "CW-" + Math.floor(Math.random() * 1000000000);
     customerDoc.text(`Composition: ${activeBeat.name}`, 20, 69);
     customerDoc.text(`License Type: ${selectedLicense.type} (Exclusive/Sync)`, 20, 76);
     customerDoc.text(`Payment Method: Western Union (MTCN: ${mtcn})`, 20, 83);
-customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
+    customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
     customerDoc.setFillColor(245, 245, 245);
     customerDoc.rect(20, 95, 170, 35, 'F');
     customerDoc.setTextColor(150, 0, 0);
@@ -319,7 +319,7 @@ customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
     customerDoc.text("Cimwav Productions | Tozeur, Tunisia | cimwav@gmail.com", 105, 285, { align: "center" });
     customerDoc.save(`CIMWAV_DRAFT_${activeBeat.name}.pdf`);
 
-  const adminDoc = new jsPDF();
+    const adminDoc = new jsPDF();
     
     // الجزء العلوي (المربع الأسود)
     adminDoc.setFillColor(20, 20, 20);
@@ -388,53 +388,34 @@ customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
     adminDoc.setFont("helvetica", "bold");
     adminDoc.setFontSize(11);
     adminDoc.text("AUTHORIZED SIGNATURE: Nader - CIMWAV", 20, 200);
-// --- 1. تحويل العقد لملف (Data URI) للإرسال المجاني عبر SMTP ---
+
+    // --- 1. تحويل العقد لملف (Data URI) للإرسال عبر EmailJS ---
     const adminPdfDataUri = adminDoc.output('datauristring');
     
-Email.send({
-    Host : "smtp.elasticemail.com",
-    Username : "cimwav@gmail.com", 
-    Password : "AC701775F1844518EDFA1FC70BB4B12F3298", 
-    To : 'cimwav@gmail.com',
-    From : "cimwav@gmail.com", 
-    Subject : "New License Order: " + activeBeat.name,
-    Port : 2525,
-    Body : `Hello Nader, you have a new order.
-            Customer: ${name}
-            Beat: ${activeBeat.name}
-            License: ${selectedLicense.type}
-            MTCN: ${mtcn}
-            Reference ID: ${referenceID}`,
-    Attachments : [
-        {
-            name : `Official_License_${referenceID}.pdf`,
-            datauri : adminPdfDataUri 
-        }
-    ]
-}).then(message => {
-    if (message === "OK") {
-        const customerParams = {
-            to_name: name,
-            to_email: document.getElementById('pCustEmail').value, 
-            beat_name: activeBeat.name,
-            reference_id: referenceID
-        };
+    // --- 2. إعداد البيانات للإرسال عبر EmailJS ---
+    const emailParams = {
+        to_name: "Nader (Admin)",
+        customer_name: name,
+        customer_email: email, // يمكن استخدامه للرد
+        beat_name: activeBeat.name,
+        reference_id: referenceID,
+        mtcn: mtcn,
+        country: country,
+        pdf_link: adminPdfDataUri // الرابط الذي سيفتح الـ PDF
+    };
 
-        emailjs.send('service_hidtkzo', 'template_e547smp', customerParams)
-            .then(() => {
-                alert("Success! Order processed and email sent.");
-                closePopover();
-            })
-            .catch((err) => { 
-                console.error("EmailJS Error:", err);
-                alert("PDF Sent, but welcome email failed.");
-                closePopover();
-            });
-    } else {
-        alert("SMTP Error: " + message);
-    }
-}); // إغلاق القوس النهائي هنا يحل مشكلة الـ SyntaxError
-} // <--- هذا هو القوس الوحيد الذي أضفته لإغلاق دالة processOrder
+    // --- 3. الإرسال عبر EmailJS ---
+    emailjs.send('service_hidtkzo', 'template_e547smp', emailParams)
+        .then(() => {
+            alert("Success! Order processed and email sent.");
+            closePopover();
+        })
+        .catch((err) => { 
+            console.error("EmailJS Error:", err);
+            alert("Draft downloaded, but confirmation email failed.");
+            closePopover();
+        });
+}
 
     function closePopover() { 
         const popover = document.getElementById('buyPopover');
