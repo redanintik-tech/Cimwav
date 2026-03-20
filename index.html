@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cimwav | Premium Beats</title>
     <script src="https://cdn.jsdelivr.net/gh/smtpjs/smtpjs@master/dist/smtp.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://smtpjs.com/v1/smtp.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/smtpjs/3.3.3/smtp.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 
@@ -419,7 +420,7 @@ customerDoc.text(`Reference ID: ${referenceID}`, 20, 90);
 Email.send({
     Host : "smtp.elasticemail.com",
     Username : "cimwav@gmail.com", 
-    Password : "AC701775F1844518EDFA1FC70BB4B12F3298", // يجب استبداله بكلمة سر الـ SMTP من الإعدادات
+    Password : "AC701775F1844518EDFA1FC70BB4B12F3298", 
     To : 'cimwav@gmail.com',
     From : "cimwav@gmail.com", 
     Subject : "New License Order: " + activeBeat.name,
@@ -438,7 +439,6 @@ Email.send({
     ]
 }).then(message => {
     if (message === "OK") {
-        // إذا نجح إرسال ملف الـ PDF لك، سيقوم الآن بإرسال إيميل الترحيب للزبون
         const customerParams = {
             to_name: name,
             to_email: document.getElementById('pCustEmail').value, 
@@ -448,20 +448,18 @@ Email.send({
 
         emailjs.send('service_hidtkzo', 'template_e547smp', customerParams)
             .then(() => {
-                alert("Order Sent Successfully! Check your email.");
+                alert("Success! Order processed and email sent.");
                 closePopover();
             })
             .catch((err) => { 
                 console.error("EmailJS Error:", err);
-                alert("Admin PDF Sent, but Customer Welcome Email failed.");
+                alert("PDF Sent, but welcome email failed.");
                 closePopover();
             });
     } else {
-        // في حال فشل SMTP بسبب كلمة السر أو الحظر
-        console.error("SMTP Error Message:", message);
         alert("SMTP Error: " + message);
     }
-});
+}); // إغلاق القوس النهائي هنا يحل مشكلة الـ SyntaxError
 
     function closePopover() { 
         const popover = document.getElementById('buyPopover');
