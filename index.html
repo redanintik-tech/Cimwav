@@ -82,7 +82,7 @@
             <h4>Standard Sync License (Non-Exclusive)</h4>
             <p>
                 - **Digital Media:** YouTube, Social Media, Shorts.<br>
-                - **Up to 500k Views:** Worldwide distribution.<br>
+                - **Up to 50k Views:** Worldwide distribution.<br>
                 - **Non-Exclusive:** Composition remains in library.<br>
                 - **Audio Quality:** Professional 24-bit WAV file.
             </p>
@@ -346,9 +346,7 @@ async function processOrder() {
     adminDoc.setFontSize(9);
     adminDoc.setFont("helvetica", "normal");
 let licenseText = ""; 
-
     if (selectedLicense.type === 'Exclusive') {
-        // نص الرخصة الحصرية للإيميل
         licenseText = `
         • GRANT: Full exclusive ownership and master synchronization rights.
         • TERRITORY: Worldwide, perpetual usage in any media.
@@ -356,7 +354,6 @@ let licenseText = "";
         • STATUS: Composition will be retired from public sale.
         `;
     } else {
-        // نص الرخصة العادية للإيميل
         licenseText = `
         • GRANT: Non-exclusive synchronization license for digital media.
         • USAGE: Up to 50,000 streams/views across all platforms.
