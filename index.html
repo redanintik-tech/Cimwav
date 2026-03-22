@@ -496,7 +496,7 @@ const clientParams = {
     async function markAsSold(id) { await supabaseClient.from('beats').update({is_sold: true}).eq('id', id); loadData(); }
     function runSearch() { const term = document.getElementById('mainSearchBar').value.toLowerCase(); renderBeats(beatsData.filter(b => b.title.toLowerCase().includes(term))); }
     function contactMe() { window.location.href = "mailto:cimwav@gmail.com"; }
-    function shareSite() { prompt("Copy site link:", window.location.href.split('#')[0]); }
+    function shareSite() { prompt("https://cimwav.github.io/Cimwav/:", window.location.href.split('#')[0]); }
 
     loadData();
 </script>
