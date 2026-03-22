@@ -199,10 +199,9 @@
                 <img src="${b.cover_url || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=60'}" class="cover-img" alt="Cover">
                 <span class="title">${b.title}</span>
 ${(b.bpm || b.key) ? `
-    <div style="font-size: 12px; color: #888; margin-bottom: 10px;">
-        ${b.bpm ? `<span>BPM: ${b.bpm}</span>` : ''} 
-        ${(b.bpm && b.key) ? ' | ' : ''} 
-        ${b.key ? `<span>Key: ${b.key}</span>` : ''}
+    <div style="font-size: 12px; color: #888; margin-bottom: 10px; text-align: left;">
+        ${b.bpm ? `<span style="background: #1a1a1a; padding: 2px 6px; border-radius: 4px;">BPM: ${b.bpm}</span>` : ''} 
+        ${b.key ? `<span style="background: #1a1a1a; padding: 2px 6px; border-radius: 4px; margin-left: 5px;">Key: ${b.key}</span>` : ''}
     </div>
 ` : ''}
                 <audio src="${b.audio_url}" controls controlsList="nodownload"></audio>
@@ -211,7 +210,7 @@ ${(b.bpm || b.key) ? `
     ${b.is_free ? `
         <a href="${b.audio_url}" download="${b.title}.mp3" class="btn">Download Free MP3</a>
     ` : (b.is_sold ? '' : `
-        <button class="btn" onclick="handleBuy(event, '${b.title}', ${b.exc_price}, ${b.ult_price}, '${b.bpm || 'N/A'}', '${b.key || 'N/A'}')">
+        <button class="btn" onclick="handleBuy(event, '${b.title}', ${b.exc_price}, ${b.ult_price})">
     BUY LICENSE
 </button>
     `)}
@@ -227,10 +226,9 @@ ${(b.bpm || b.key) ? `
         `).join('');
     }
 
-    function handleBuy(event, beatName, exc_price, ult_price, bpm, key) {
+    function handleBuy(event, beatName, exc_price, ult_price) {
         event.stopPropagation();
-        activeBeat = { name: beatName, exc: exc_price, ult: ult_price, bpm: bpm, 
-        key: key };
+        activeBeat = { name: beatName, exc: exc_price, ult: ult_price };
         document.getElementById('step1').style.display = 'block';
         document.getElementById('step2').style.display = 'none';
         
