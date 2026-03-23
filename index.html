@@ -499,7 +499,24 @@ const clientParams = {
     async function deleteItem(id) { if(confirm("Are you sure?")) { await supabaseClient.from('beats').delete().eq('id', id); loadData(); } }
     async function markAsSold(id) { await supabaseClient.from('beats').update({is_sold: true}).eq('id', id); loadData(); }
     function runSearch() { const term = document.getElementById('mainSearchBar').value.toLowerCase(); renderBeats(beatsData.filter(b => b.title.toLowerCase().includes(term))); }
-    function contactMe() { window.location.href = "mailto:cimwav@gmail.com"; }
+function contactMe() {
+    const email = "cimwav@gmail.com";
+    const subject = encodeURIComponent("Inquiry about Cinematic Music License - CIMWAV");
+    const body = encodeURIComponent("Hello CIMWAV,\n\nI am interested in your cinematic scores. Let's discuss a potential project.");
+    
+    // محاولة فتح تطبيق البريد الافتراضي أولاً (mailto)
+    const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
+    window.location.href = mailtoUrl;
+
+    // إذا لم يفتح التطبيق خلال 500 ملي ثانية، سيتم فتح Gmail في المتصفح كبديل
+    setTimeout(() => {
+        // نتحقق مما إذا كانت الصفحة لا تزال نشطة (لم يغادرها المستخدم للتطبيق)
+        if (document.hasFocus()) {
+            const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`;
+            window.open(gmailUrl, '_blank');
+        }
+    }, 800);
+}
 async function shareSite() {
     const shareData = {
         title: 'CIMWAV | Cinematic Scores',
