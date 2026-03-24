@@ -1,1 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIMWAV | Admin Studio 🔒</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --primary: #00ff88; --bg: #050505; --card: #111; --text: #fff; --border: #222; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; text-align: center; padding: 40px; }
+        #adminPanel { background: #111; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; text-align: left; border: 1px solid #333; }
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .full { grid-column: span 2; }
+        input[type="number"], input[type="text"], input[type="file"] { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; width: 100%; box-sizing: border-box; }
+        .btn { background: var(--primary); color: #000; border: none; padding: 12px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 10px; }
+        .beat-card { background: var(--card); border: 1px solid var(--border); padding: 15px; border-radius: 10px; margin-top: 20px; text-align: left; max-width: 600px; margin-inline: auto; }
+    </style>
+</head>
+<body>
 
+<div id="adminPanel">
+    <h3 style="margin-top:0; color: var(--primary);">CIMWAV MASTER CONTROL</h3>
+    <div class="admin-grid">
+        <input type="text" id="bTitle" placeholder="Beat Name" class="full">
+        <input type="file" id="bFile" accept="audio/mp3" class="full">
+        <input type="text" id="addCoverUrl" placeholder="Cover Image URL (Direct link)" class="full">
+        <input type="number" id="bBPM" placeholder="BPM (e.g. 140)">
+        <input type="text" id="bKey" placeholder="Key (e.g. Am)">
+        <input type="number" id="pExc" placeholder="Exclusive Price ($)">
+        <input type="number" id="pUlt" placeholder="Ultimate Price ($)">
+
+        <label style="color:white; grid-column: span 2; padding: 10px 0; cursor: pointer;">
+            <input type="checkbox" id="addIsFree"> Make this Beat FREE
+        </label>
+        <button id="uploadBtn" class="btn full" onclick="saveBeat()">Publish Beat</button>
+    </div>
+</div>
+
+<hr style="margin: 40px 0; border: 0; border-top: 1px solid #222;">
+<div id="list">Loading...</div>
+
+<script>
+    // ⚠️ تنبيه: استخدم هنا مفتاح service_role بدلاً من anon
+    const SB_URL = 'https://uuljpvwwztsgsrlpnjrm.supabase.co'; 
+    const SB_ADMIN_KEY = 'k0efZZPRsVOlJdwFQlguGR9AWB2aJMc5l/KTQsJOSgCmodutzO4ODmN9he4axSrzXZ3cSLHMJFHzrwENW8cnLw=='; 
+    
+    const supabaseAdmin = supabase.createClient(SB_URL, SB_ADMIN_KEY);
+
+    async function loadData() {
+        const { data } = await supabaseAdmin.from('beats').select('*').order('created_at', { ascending: false });
+        if (data) renderBeats(data);
+    }
+
+    function renderBeats(data) {
+        const listDiv = document.getElementById('list');
+        listDiv.innerHTML = data.map(b => `
+            <div class="beat-card">
+                <span style="color:var(--primary); font-weight:bold;">${b.title}</span>
+                <div style="margin-top:10px; display:flex; gap:10px;">
+                    <button onclick="deleteItem(${b.id})" style="color:red; background:none; border:1px solid red; padding:5px 10px; cursor:pointer; border-radius:4px;">Delete</button>
+                    <button onclick="markAsSold(${b.id})" style="color:orange; background:none; border:1px solid orange; padding:5px 10px; cursor:pointer; border-radius:4px;">Mark Sold</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function saveBeat() {
+        const title = document.getElementById('bTitle').value;
+        const fileInput = document.getElementById('bFile');
+        const cover_url = document.getElementById('addCoverUrl').value;
+        const is_free = document.getElementById('addIsFree').checked;
+        const exc_price = document.getElementById('pExc').value || 0;
+        const ult_price = document.getElementById('pUlt').value || 0;
+        const bpm = document.getElementById('bBPM').value;
+        const key = document.getElementById('bKey').value;
+        const btn = document.getElementById('uploadBtn');
+
+        if (!title || fileInput.files.length === 0) return alert("Missing Info!");
+
+        const file = fileInput.files[0];
+        const fileName = `${Date.now()}-${file.name}`;
+        btn.disabled = true; btn.innerText = "Uploading...";
+
+        try {
+            await supabaseAdmin.storage.from('beats-files').upload(fileName, file);
+            const { data: urlData } = supabaseAdmin.storage.from('beats-files').getPublicUrl(fileName);
+            
+            await supabaseAdmin.from('beats').insert([{ 
+                title, audio_url: urlData.publicUrl, exc_price, ult_price, cover_url, is_free, bpm, key,
+            }]);
+            
+            alert("Published! 🔥"); loadData();
+        } catch (err) { alert("Error: " + err.message); }
+        finally { btn.disabled = false; btn.innerText = "Publish Beat"; }
+    }
+
+    async function deleteItem(id) { if(confirm("Are you sure?")) { await supabaseAdmin.from('beats').delete().eq('id', id); loadData(); } }
+    async function markAsSold(id) { await supabaseAdmin.from('beats').update({is_sold: true}).eq('id', id); loadData(); }
+
+    loadData();
+</script>
+</body>
+</html>
