@@ -54,11 +54,6 @@
         .buttons-container { display: flex; gap: 10px; }
         .buy-popover input { width: 100%; margin-bottom: 10px; padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 6px; box-sizing: border-box; }
         .wu-details { background: #1a1a1a; padding: 12px; border-radius: 5px; font-size: 12px; color: #ccc; margin-bottom: 15px; border-left: 4px solid #ffd700; }
-
-        #adminPanel { background: #111; padding: 20px; border-radius: 10px; margin-bottom: 30px; display: none; text-align: left; border: 1px solid #333; }
-        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .full { grid-column: span 2; }
-        input[type="number"], input[type="text"] { background: #000; border: 1px solid #333; color: white; padding: 10px; border-radius: 5px; }
         
         footer { margin-top: 50px; }
     </style>
@@ -122,24 +117,6 @@
 </header>
 
 <div class="container">
-    <div id="adminPanel">
-        <h3 style="margin-top:0; color: var(--primary);">Admin Control</h3>
-        <div class="admin-grid">
-            <input type="text" id="bTitle" placeholder="Beat Name" class="full">
-            <input type="file" id="bFile" accept="audio/mp3" class="full">
-            <input type="text" id="addCoverUrl" placeholder="Cover Image URL (Direct link)" class="full">
-            <input type="number" id="bBPM" placeholder="BPM (e.g. 140)">
-    <input type="text" id="bKey" placeholder="Key (e.g. Am)">
-            <input type="number" id="pExc" placeholder="Exclusive Price ($)">
-            <input type="number" id="pUlt" placeholder="Ultimate Price ($)">
-
-            <label style="color:white; grid-column: span 2; padding: 10px 0; cursor: pointer;">
-                <input type="checkbox" id="addIsFree"> Make this Beat FREE (MP3 Download)
-            </label>
-            <button id="uploadBtn" class="btn full" onclick="saveBeat()">Publish Beat</button>
-        </div>
-    </div>
-
     <input type="text" id="mainSearchBar" class="search-box" placeholder="Search for your next hit..." onkeyup="runSearch()">
     <div id="list">Loading beats...</div>
 </div>
@@ -155,7 +132,6 @@
     
     const supabaseClient = supabase.createClient(SB_URL, SB_KEY);
 
-    let isAdminMode = false;
     let beatsData = [];
     let activeBeat = {};
     let selectedLicense = {};
@@ -169,25 +145,11 @@
         }
     }, true);
 
-    function checkSecret() {
-        if (window.location.hash === "#admin") {
-            let p = prompt("Enter Secret Key:");
-            if (p === "123") {
-                isAdminMode = true;
-                document.getElementById('adminPanel').style.display = 'block';
-                renderBeats(beatsData);
-            } else { window.location.hash = ""; }
-        }
-    }
-
-    window.addEventListener('hashchange', checkSecret);
-
     async function loadData() {
         const { data } = await supabaseClient.from('beats').select('*').order('created_at', { ascending: false });
         if (data) {
             beatsData = data;
             renderBeats(beatsData);
-            checkSecret();
         }
     }
 
@@ -215,13 +177,6 @@ ${(b.bpm || b.key) ? `
 </button>
     `)}
 </div>
-
-                ${isAdminMode ? `
-                    <div style="margin-top:15px; border-top:1px solid #333; padding-top:15px; display:flex; gap:10px;">
-                        <button onclick="deleteItem(${b.id})" style="color:red; background:none; border:none; cursor:pointer;">Delete</button>
-                        <button onclick="markAsSold(${b.id})" style="color:orange; background:none; border:none; cursor:pointer;">Mark Sold</button>
-                    </div>
-                ` : ''}
             </div>
         `).join('');
     }
@@ -415,12 +370,11 @@ const adminParams = {
     date: formattedDate,
     country: country,
         reference_id: referenceID,
-        to_email: 'cimwav@gmail.com', // الإيميل المستلم للأدمن
+        to_email: 'cimwav@gmail.com', 
         pdf_link: adminPdfDataUri
     };
 
 
-// 2. الربط مع بيانات العميل
 const clientParams = {
     date: formattedDate,
     customer_name: name,
@@ -433,7 +387,6 @@ const clientParams = {
     license_details: licenseText,
 };
 
-    // --- الإرسال عبر EmailJS باستخدام الـ IDs الصحيحة ---
     emailjs.send('service_hidtkzo', 'template_5sut9re', adminParams)
         .then(() => {
             return emailjs.send('service_hidtkzo', 'template_e547smp', clientParams);
@@ -459,77 +412,35 @@ const clientParams = {
         if (popover && !e.target.closest('#buyPopover') && !e.target.closest('.btn')) { closePopover(); }
     };
 
-    async function saveBeat() {
-        const title = document.getElementById('bTitle').value;
-        const fileInput = document.getElementById('bFile');
-        const cover_url = document.getElementById('addCoverUrl').value;
-        const is_free = document.getElementById('addIsFree').checked;
-        const exc_price = document.getElementById('pExc').value || 0;
-        const ult_price = document.getElementById('pUlt').value || 0;
-        const btn = document.getElementById('uploadBtn');
-        const bpm = document.getElementById('bBPM').value; // جديد
-    const key = document.getElementById('bKey').value;
-
-        if (!title || fileInput.files.length === 0) return alert("Missing Info!");
-
-        const file = fileInput.files[0];
-        const fileName = `${Date.now()}-${file.name}`;
-        btn.disabled = true; btn.innerText = "Uploading...";
-
-        try {
-            await supabaseClient.storage.from('beats-files').upload(fileName, file);
-            const { data: urlData } = supabaseClient.storage.from('beats-files').getPublicUrl(fileName);
-            
-            await supabaseClient.from('beats').insert([{ 
-                title, 
-                audio_url: urlData.publicUrl, 
-                exc_price, 
-                ult_price,
-                cover_url,
-                is_free,
-                bpm,
-                key,
-            }]);
-            
-            alert("Published! 🔥"); loadData();
-        } catch (err) { alert("Error: " + err.message); }
-        finally { btn.disabled = false; btn.innerText = "Publish Beat"; }
-    }
-
-    async function deleteItem(id) { if(confirm("Are you sure?")) { await supabaseClient.from('beats').delete().eq('id', id); loadData(); } }
-    async function markAsSold(id) { await supabaseClient.from('beats').update({is_sold: true}).eq('id', id); loadData(); }
     function runSearch() { const term = document.getElementById('mainSearchBar').value.toLowerCase(); renderBeats(beatsData.filter(b => b.title.toLowerCase().includes(term))); }
+
 function contactMe() {
     const email = "cimwav@gmail.com";
     const subject = encodeURIComponent("Inquiry about Cinematic Music License - CIMWAV");
     const body = encodeURIComponent("Hello CIMWAV,\n\nI am interested in your cinematic scores. Let's discuss a potential project.");
     
-    // محاولة فتح تطبيق البريد الافتراضي أولاً (mailto)
     const mailtoUrl = `mailto:${email}?subject=${subject}&body=${body}`;
     window.location.href = mailtoUrl;
 
-    // إذا لم يفتح التطبيق خلال 500 ملي ثانية، سيتم فتح Gmail في المتصفح كبديل
     setTimeout(() => {
-        // نتحقق مما إذا كانت الصفحة لا تزال نشطة (لم يغادرها المستخدم للتطبيق)
         if (document.hasFocus()) {
             const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${email}&su=${subject}&body=${body}`;
             window.open(gmailUrl, '_blank');
         }
     }, 800);
 }
+
 async function shareSite() {
     const shareData = {
         title: 'CIMWAV | Cinematic Scores',
         text: 'Listen to my latest cinematic film scores on CIMWAV!',
-        url: window.location.origin + window.location.pathname // يأخذ الرابط الحالي تلقائياً (حتى لو غيرت الدومين)
+        url: window.location.origin + window.location.pathname 
     };
 
     try {
         if (navigator.share) {
-            // تفتح قائمة المشاركة الأصلية في الهاتف (واتساب، انستجرام، إلخ)
             await navigator.share(shareData);
         } else {
-            // للكمبيوتر: نسخ الرابط تلقائياً مع تنبيه أنيق
             await navigator.clipboard.writeText(shareData.url);
             showToast("Link copied to clipboard! ✨");
         }
@@ -538,7 +449,6 @@ async function shareSite() {
     }
 }
 
-// تنبيه صغير يظهر عند نسخ الرابط (Toast)
 function showToast(message) {
     const toast = document.createElement("div");
     toast.innerText = message;
