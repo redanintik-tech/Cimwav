@@ -208,7 +208,7 @@ ${(b.bpm || b.key) ? `
                 
                <div class="price-row">
     ${b.is_free ? `
-        <a href="${b.audio_url}" download="${b.title}.mp3" class="btn">Download Free MP3</a>
+        <a href="${b.audio_url}" download="${b.title}.mp3" target="_blank" class="btn">Download Free MP3</a>
     ` : (b.is_sold ? '' : `
         <button class="btn" onclick="handleBuy(event, ${b.id})">
     BUY LICENSE
